@@ -1,0 +1,50 @@
+import {BrowserRouter, Routes, Route} from "react-router-dom"
+import Dashboard from "./pages/Dashboard";
+import Login from "./components/Login";
+import NewPassword from "./components/NewPassword";
+import VerifyOTP from "./components/VerifyOTP";
+import ForgotPassword from "./components/ForgotPassword";
+import PasswordChangeSuccess from "./components/PasswordChangeSuccess";
+import BusinessSectorSelection from "./components/BusinessSectorSelection";
+import PrivateRoute from "./components/PrivateRoute";
+import Users from "./pages/Users";
+import Employee from "./pages/Employee";
+import Shift from "./pages/Shift";
+import AddEmployee from "./pages/AddEmployee";
+import Products from "./pages/Products";
+import AddUser from "./pages/AddUser";
+//import AddEmployee from "./pages/AddEmployee";
+import EditUser from "./pages/EditUser";
+import AddProduct from "./pages/AddProduct";
+import EditProduct from "./pages/EditProduct";
+
+
+
+function App() {
+  return (
+    <div >
+      <BrowserRouter>
+        <Routes>
+        <Route path="/" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/new-password" element={<NewPassword />} />
+            <Route path="/password-change-success" element={<PasswordChangeSuccess />} />
+            <Route path="/business-sector-selection" element={<BusinessSectorSelection />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
+            <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+            <Route path="/employee" element={<PrivateRoute element={<Employee />} />} />
+            <Route path="/shift" element={<PrivateRoute element={<Shift />} />} />
+            <Route path="/addemployee" element={<PrivateRoute element={<AddEmployee />} />} />
+            <Route path="/users" element={<PrivateRoute element={<Users />} />} />
+            <Route path="/users/add" element={<PrivateRoute element={<AddUser />} />} />
+            <Route path="/users/edit/:id" element={<PrivateRoute element={<EditUser />} />} />
+            <Route path="/products" element={<PrivateRoute element={<Products />} />} />
+            <Route path="/products/add" element={<PrivateRoute element={<AddProduct />} />} />
+            <Route path="/products/edit/:id" element={<PrivateRoute element={<EditProduct />} />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+}
+
+export default App;

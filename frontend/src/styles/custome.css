@@ -1,0 +1,288 @@
+.custom-navbar {
+  max-width: 85%; /* Sesuaikan dengan lebar yang diinginkan */
+  margin-left: auto; /* Membuat navbar mentok ke kanan */
+  /*border: 2px solid black; /* Menambahkan border tebal */
+  border-radius: 5px; /* Opsional: Untuk membuat sudut sedikit melengkung */
+  padding: 10px; /* Opsional: Untuk memberikan padding dalam navbar */
+}
+
+.userlist-text {
+  font-family: 'Inter', sans-serif; /* Atur font sesuai keinginan */
+}
+
+/* styles/Sidebar.css */
+.menu {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Mengisi tinggi viewport */
+  padding: 0; /* Hilangkan padding default pada menu */
+  color: #ffffff; /* Warna teks putih untuk kontras dengan background */
+  position: fixed; /* Membuat sidebar tetap di posisi yang sama saat scroll */
+  top: 0; /* Posisi sidebar dari atas halaman */
+  left: 0; /* Posisi sidebar dari kiri halaman */
+  width: 300px; /* Lebar sidebar */
+  overflow-y: auto; /* Menambahkan scroll vertikal jika konten melebihi tinggi sidebar */
+  z-index: 1000; /* Menempatkan sidebar di atas elemen lain */
+}
+
+.sidebar-logo {
+  text-align: center;
+  padding: 0; /* Mengurangi padding vertikal agar logo lebih dekat ke atas */
+  margin: 0; /* Menghapus margin */
+
+}
+
+.sidebar-logo img {
+  max-width: 100px; /* Sesuaikan ukuran logo */
+  height: auto; /* Menjaga proporsi logo */
+}
+
+.menu-label {
+  color: #ffffff; /* Warna teks label putih untuk kontras dengan background */
+  margin: 10px 0; /* Menambahkan jarak antar label */
+  padding-left: 15px; /* Memberikan ruang di sisi kiri label */
+  font-weight: bold; /* Menebalkan teks label */
+}
+
+/* custome.css */
+.sidebar {
+  background-color: #111C43;
+  color: white;
+  padding: 1rem;
+}
+
+.sidebar .menu-list a {
+  color: white !important;
+  text-decoration: none !important; /* Menghapus garis bawah */
+  background-color: transparent !important; /* Pastikan latar belakang transparan */
+}
+
+.sidebar .menu-list a:hover {
+  color: lightblue !important;
+}
+
+.sidebar .menu-label {
+  color: white !important;
+}
+
+.sidebar .button.is-white {
+  background-color: blue;
+  color: white !important;
+  border: none;
+}
+
+.sidebar .button.is-white:hover {
+  background-color: lightblue;
+}
+
+.sidebar-divider {
+  border: 0;
+  height: 1px;
+  background-color: white;
+  margin: 0.5rem 0; /* Kurangi margin untuk menempatkan garis lebih dekat ke logo */
+}
+
+/* Gaya untuk tombol logout */
+.button.is-white {
+  background-color: #ffffff; /* Warna latar belakang button */
+  color: #111C43; /* Warna teks button sesuai dengan background sidebar */
+  border: none; /* Menghapus border default pada button */
+  padding: 10px 15px; /* Ruang di sekitar teks button */
+  display: flex; /* Menyusun ikon dan teks secara horizontal */
+  align-items: center; /* Menyelaraskan ikon dan teks secara vertikal */
+  cursor: pointer; /* Menambahkan pointer cursor pada button */
+}
+
+.hero {
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Overlay hitam dengan opacity 0.5 */
+  z-index: 1;
+}
+
+.hero .hero-body {
+  position: relative;
+  z-index: 2;
+}
+
+
+.button.is-white:hover {
+  background-color: #f0f0f0; /* Warna latar belakang saat hover pada button */
+}
+
+.welcome-text {
+  font-family: 'Inter', sans-serif; /* Pastikan Anda sudah mengimpor font Inter */
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  text-align: left;
+}
+
+.welcome-text-2{
+font-family: 'Inter', sans-serif;
+font-size: 12px;
+font-weight: 400;
+line-height: 20px;
+text-align: left;
+}
+
+.checkbox-remember {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-remember input[type="checkbox"] {
+  margin-right: 5px; /* Jarak antara checkbox dan teks "Ingat Saya" */
+}
+
+.checkbox-remember label {
+  font-family: 'Inter', sans-serif;
+}
+
+
+.button-login {
+  background-color: #442F1E !important; /* Warna coklat untuk background tombol */
+  color: white !important; /* Warna putih untuk teks tombol */
+  border: none !important; /* Hapus border */
+}
+
+.button-login:hover {
+  background-color: darkbrown !important; /* Warna coklat lebih gelap saat tombol di-hover */
+  color: white !important; /* Warna putih untuk teks tombol */
+}
+
+.help-text {
+  color: #A9A9A9; /* Warna abu muda samar */
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.reset-link {
+  color: #442F1E; /* Warna coklat yang sama dengan tombol login */
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  text-align: center;
+  display: block;
+  margin-top: 5px;
+}
+
+.reset-link:hover {
+  color: darkbrown; /* Warna coklat lebih gelap saat di-hover */
+}
+
+.timer {
+  color: #442F1E;
+}
+
+.text-centered {
+  text-align: center;
+}
+
+/* Custom Navbar CSS */
+.navbar-item .tag {
+  margin-left: 5px;
+}
+
+.navbar-item .navbar-link {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-item .navbar-link span {
+  margin-left: 8px;
+}
+
+.navbar-dropdown .navbar-item {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-dropdown .navbar-item span {
+  margin-left: 8px;
+}
+
+.header-element .dropdown {
+  position: relative; /* Menetapkan posisi relatif untuk elemen dropdown */
+}
+
+.header-element .dropdown-menu {
+  display: none; /* Secara default, dropdown disembunyikan */
+  position: absolute; /* Menetapkan posisi absolut */
+  top: 100%; /* Menempatkan menu tepat di bawah elemen pemicu */
+  left: -70px; /* Menyelaraskan menu dengan sisi kiri elemen pemicu */
+  z-index: 1000; /* Pastikan menu berada di atas elemen lain */
+  background: white; /* Background putih agar menu terlihat jelas */
+  border: 1px solid #ddd; /* Border untuk menu */
+  border-radius: 4px; /* Radius border agar sudutnya membulat */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Shadow untuk memberikan efek mengambang */
+}
+
+.header-element .dropdown-menu.show {
+  display: block; /* Menampilkan menu ketika dropdownOpen benar */
+}
+
+.header-element .dropdown-menu li {
+  list-style: none; /* Menghapus bullet points pada menu item */
+}
+
+
+
+.navbar-burger {
+  display: none; /* Hide burger icon on larger screens */
+}
+
+@media (max-width: 1024px) {
+  .navbar-burger {
+    display: block; /* Show burger icon on smaller screens */
+  }
+}
+
+
+/* Styles for when the sidebar is minimized */
+body.sidebar-minimized .app-sidebar {
+  width: 80px; /* Atur ukuran sidebar saat diminimalkan sesuai keinginan */
+}
+
+body.sidebar-minimized .app-sidebar .side-menu__item {
+  text-align: center;
+  /* Atur elemen lainnya sesuai kebutuhan */
+}
+
+/* Optionally hide text labels and show only icons */
+body.sidebar-minimized .app-sidebar .side-menu__label {
+  display: none;
+}
+
+body.sidebar-minimized .main-sidebar-header .header-logo {
+  display: 20px; /* Atur tampilan logo saat sidebar diminimalkan */
+}
+
+body.sidebar-minimized .main-header-container .header-element {
+  padding-left: 80px; /* Menyesuaikan padding header saat sidebar diminimalkan */
+}
+
+body.sidebar-minimized .main-header-container .header-element img {
+  width: 32px; /* Ukuran logo yang lebih kecil saat sidebar diminimalkan */
+  height: auto;
+}
+
+.dataTables_filter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#addEmployeeBtn {
+  margin-left: 10px;
+}
