@@ -41,7 +41,7 @@ const Sidebar = () => {
                 </Link>
               </li>
               <li className="slide has-sub">
-                <Link to="/shift" className="side-menu__item">
+                <Link to="/listtask" className="side-menu__item">
                   <i className="bx bx-task side-menu__icon"></i>
                   <span className="side-menu__label">To Do List</span>
                   
