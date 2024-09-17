@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import Select from 'react-select'; // Import react-select untuk multi-select
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ShiftList = () => {
@@ -7,7 +8,7 @@ const ShiftList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [setShowShiftModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -15,11 +16,11 @@ const ShiftList = () => {
     end: ''
   });
   const [assignData, setAssignData] = useState({
-    employee: '',
+    employees: [], // Mengubah dari string ke array untuk multiple employees
     outlet: '',
     date: ''
   });
-  //const [outlets, setOutlets] = useState([]); // Untuk data outlet
+  const [userOptions, setUserOptions] = useState([]); // Menyimpan opsi user
 
   useEffect(() => {
     const fetchShiftData = async () => {
@@ -49,24 +50,31 @@ const ShiftList = () => {
       }
     };
 
-    // Hapus atau nonaktifkan bagian ini sementara jika endpoint outlet menyebabkan masalah
-    // const fetchOutlets = async () => {
-    //   try {
-    //     const response = await fetch('/v1/outlets'); // Ganti dengan endpoint yang sesuai
-    //     const result = await response.json();
-    //     if (Array.isArray(result)) {
-    //       setOutlets(result);
-    //     } else {
-    //       setError('Unexpected outlets response format');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching outlets data:', error);
-    //     setError('Error fetching outlets data');
-    //   }
-    // };
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/v1/select/user', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const users = await response.json();
+        const userOptions = users.map(user => ({
+          value: user.ulid,
+          label: `${user.first_name} ${user.last_name || ''}`.trim()
+        }));
+        setUserOptions(userOptions);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
 
     fetchShiftData();
-    // fetchOutlets(); // Hapus atau nonaktifkan sementara
+    fetchUserData(); // Ambil data pengguna saat komponen di-mount
   }, []);
 
   const handleSearch = (e) => {
@@ -74,7 +82,7 @@ const ShiftList = () => {
   };
 
   const handleShowShiftModal = () => setShowShiftModal(true);
-  const handleCloseShiftModal = () => setShowShiftModal(false);
+  
 
   const handleShowAssignModal = () => setShowAssignModal(true);
   const handleCloseAssignModal = () => setShowAssignModal(false);
@@ -84,23 +92,33 @@ const ShiftList = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleAssignChange = (e) => {
-    const { name, value } = e.target;
-    setAssignData({ ...assignData, [name]: value });
-  };
-
-  const handleShiftFormSubmit = (e) => {
-    e.preventDefault();
-    // Implementasi untuk mengirim data shift form
-    console.log('Shift Form Data:', formData);
-    handleCloseShiftModal();
+  const handleAssignChange = (selectedOptions) => {
+    const selectedEmployees = selectedOptions ? selectedOptions.map(option => option.value) : [];
+    setAssignData({ ...assignData, employees: selectedEmployees });
   };
 
   const handleAssignFormSubmit = (e) => {
     e.preventDefault();
     // Implementasi untuk mengirim data assign form
     console.log('Assign Form Data:', assignData);
-    handleCloseAssignModal();
+    
+    // Implement POST request dengan assignData.employees (array of ulids)
+    fetch('/v1/assign-task', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+      body: JSON.stringify(assignData),
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+      handleCloseAssignModal();
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
   };
 
   if (loading) {
@@ -141,7 +159,7 @@ const ShiftList = () => {
               <table id="shift-table" className="table table-bordered text-nowrap w-100">
                 <thead>
                   <tr>
-                  <th style={{ width: '10%' }}>Shift ID</th>
+                    <th style={{ width: '10%' }}>Shift ID</th>
                     <th style={{ width: '30%' }}>Nama Shift</th>
                     <th style={{ width: '20%' }}>Start Time</th>
                     <th style={{ width: '20%' }}>End Time</th>
@@ -178,56 +196,6 @@ const ShiftList = () => {
         </div>
       </div>
 
-      {/* Modal untuk Tambah Shift */}
-      <Modal show={showShiftModal} onHide={handleCloseShiftModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Tambah Shift</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleShiftFormSubmit}>
-            <Form.Group controlId="formShiftName">
-              <Form.Label>Shift Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter shift name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formStartTime">
-              <Form.Label>Start Time</Form.Label>
-              <Form.Control
-                type="time"
-                name="start"
-                value={formData.start}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formEndTime">
-              <Form.Label>End Time</Form.Label>
-              <Form.Control
-                type="time"
-                name="end"
-                value={formData.end}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseShiftModal}>
-                Cancel
-              </Button>
-              <Button variant="primary" type="submit">
-                Save Shift
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
       {/* Modal untuk Assign Schedule */}
       <Modal show={showAssignModal} onHide={handleCloseAssignModal} centered>
         <Modal.Header closeButton>
@@ -236,14 +204,14 @@ const ShiftList = () => {
         <Modal.Body>
           <Form onSubmit={handleAssignFormSubmit}>
             <Form.Group controlId="formEmployee">
-              <Form.Label>Employee  <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter employee name"
-                name="employee"
-                value={assignData.employee}
+              <Form.Label>Employees  <span className="text-danger">*</span></Form.Label>
+              <Select
+                isMulti
+                name="employees"
+                options={userOptions}
+                className="basic-multi-select"
+                classNamePrefix="select"
                 onChange={handleAssignChange}
-                required
               />
             </Form.Group>
             <Form.Group controlId="formOutlet">
@@ -252,11 +220,11 @@ const ShiftList = () => {
                 as="select"
                 name="outlet"
                 value={assignData.outlet}
-                onChange={handleAssignChange}
+                onChange={handleInputChange}
                 required
               >
                 <option value="">Select Outlet</option>
-               
+                {/* Tambahkan opsi outlet */}
               </Form.Control>
             </Form.Group>
             <Form.Group controlId="formDate">
@@ -265,7 +233,7 @@ const ShiftList = () => {
                 type="date"
                 name="date"
                 value={assignData.date}
-                onChange={handleAssignChange}
+                onChange={handleInputChange}
                 required
               />
             </Form.Group>

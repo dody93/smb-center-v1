@@ -12,6 +12,7 @@ import Employee from "./pages/Employee";
 import Shift from "./pages/Shift";
 import Task from "./pages/Task";
 import AddEmployee from "./pages/AddEmployee";
+import AddSchedule from "./pages/AddSchedule";
 import Products from "./pages/Products";
 import AddUser from "./pages/AddUser";
 //import AddEmployee from "./pages/AddEmployee";
@@ -37,6 +38,7 @@ function App() {
             <Route path="/shift" element={<PrivateRoute element={<Shift />} />} />
             <Route path="/listtask" element={<PrivateRoute element={<Task />} />} />
             <Route path="/addemployee" element={<PrivateRoute element={<AddEmployee />} />} />
+            <Route path="/addschedule" element={<PrivateRoute element={<AddSchedule />} />} />
             <Route path="/users" element={<PrivateRoute element={<Users />} />} />
             <Route path="/users/add" element={<PrivateRoute element={<AddUser />} />} />
             <Route path="/users/edit/:id" element={<PrivateRoute element={<EditUser />} />} />

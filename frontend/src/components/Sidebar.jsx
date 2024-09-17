@@ -1,8 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Logo from '../logo_sidebar.png'; // Pastikan path ini benar
 
 const Sidebar = () => {
+  const location = useLocation();
+
+  // Fungsi untuk menentukan apakah suatu link sedang aktif
+  const isActive = (path) => location.pathname === path;
+
   return (
     <div>
       <aside className="app-sidebar sticky" id="sidebar">
@@ -26,28 +31,36 @@ const Sidebar = () => {
             <ul className="main-menu">
               <li className="slide__category"><span className="category-name">Main</span></li>
               <li className="slide has-sub">
-                <Link to="/dashboard" className="side-menu__item">
+                <Link to="/dashboard" className={`side-menu__item ${isActive('/dashboard') ? 'active' : ''}`}>
                   <i className="bx bx-home side-menu__icon"></i>
                   <span className="side-menu__label">Dashboards<span className="badge bg-warning-transparent ms-2">12</span></span>
-                  
                 </Link>
               </li>
-              <li class="slide__category"><span class="category-name">Pages</span></li>
+              <li className="slide__category"><span className="category-name">Pages</span></li>
               <li className="slide has-sub">
-                <Link to="/shift" className="side-menu__item">
+                <Link to="/employee" className={`side-menu__item ${isActive('/employee') ? 'active' : ''}`}>
+                  <i className="bx bx-file-blank side-menu__icon"></i>
+                  <span className="side-menu__label">Management Karyawan</span>
+                </Link>
+              </li>
+              <li className="slide has-sub">
+                <Link to="/shift" className={`side-menu__item ${isActive('/shift') ? 'active' : ''}`}>
                   <i className="bx bx-task side-menu__icon"></i>
                   <span className="side-menu__label">Management Shifting</span>
-                  
                 </Link>
               </li>
               <li className="slide has-sub">
-                <Link to="/listtask" className="side-menu__item">
+                <Link to="/AddSchedule" className={`side-menu__item ${isActive('/AddSchedule') ? 'active' : ''}`}>
                   <i className="bx bx-task side-menu__icon"></i>
-                  <span className="side-menu__label">To Do List</span>
-                  
+                  <span className="side-menu__label">Assign Schedule</span>
                 </Link>
               </li>
-              
+              <li className="slide has-sub">
+                <Link to="/listtask" className={`side-menu__item ${isActive('/listtask') ? 'active' : ''}`}>
+                  <i className="bx bx-box side-menu__icon"></i>
+                  <span className="side-menu__label">To Do List</span>
+                </Link>
+              </li>
             </ul>
             <div className="slide-right" id="slide-right">
               <svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191" width="24" height="24" viewBox="0 0 24 24">
