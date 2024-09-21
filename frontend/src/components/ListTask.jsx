@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo  } from 'react';
+import '../styles/custome.css';
 //import Logo from '../Logo.png'; // Pastikan pathnya benar
 
 const ListTask = () => {
@@ -11,6 +12,7 @@ const ListTask = () => {
   // State untuk form input
   const [newTask, setNewTask] = useState({
     judul: '',
+    deskripsi: '',
     tanggal_mulai: '',
     tanggal_selesai: '',
     status: 'Pending',
@@ -20,6 +22,9 @@ const ListTask = () => {
   
 
   const [assignedUsers, setAssignedUsers] = useState([]); // State untuk pengguna yang ditugaskan
+  const [user, setuser] = useState([]); // State untuk pengguna yang ditugaskan
+
+
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -62,9 +67,28 @@ const ListTask = () => {
       }
     };
 
+    const fetchUserData = async () => {
+        try {
+          const response = await fetch('v1/my-info/profile', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Jika diperlukan header token
+            },
+          });
+          const result = await response.json();
+          if (result.meta.code === 200) {
+            setuser(result.data);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      };
+
     fetchTasks();
     fetchUsers();
+    fetchUserData();
   }, []);
+
+  
 
   const handleSearch = (event) => {
     const value = event.target.value;
@@ -92,6 +116,7 @@ const ListTask = () => {
       // Validasi input
       if (
         !newTask.judul ||
+        !newTask.deskripsi ||
         !newTask.tanggal_mulai ||
         !newTask.tanggal_selesai ||
         !newTask.status ||
@@ -134,6 +159,7 @@ const ListTask = () => {
   
       setNewTask({
         judul: '',
+        deskripsi: '',
         tanggal_mulai: '',
         tanggal_selesai: '',
         status: 'Pending',
@@ -152,6 +178,7 @@ const ListTask = () => {
   
   
   const handleEditClick = (task) => {
+    console.log(task)
     setEditTask(task); // Mengisi state dengan data task yang ingin di-edit
   };
 
@@ -180,26 +207,93 @@ const ListTask = () => {
   
   
   
+  
+ 
 
   const pendingTasks = filteredTasks.filter(task => {
     console.log(`Filtering task with status: ${task.status}`);
-    return task.status.toLowerCase() === 'pending';
+    return task.status.toLowerCase() === 'pending' && task.ditugaskan_ke === user.ulid;
   });
+
+  const inProgressTasks = filteredTasks.filter(task => {
+    console.log(`Filtering task with status: ${task.status}`);
+    return task.status === 'In Progress' && task.ditugaskan_ke === user.ulid;
+  });
+
+  const completedTasks = filteredTasks.filter(task => {
+    console.log(`Filtering task with status: ${task.status}`);
+    return task.status.toLowerCase() === 'completed' && task.ditugaskan_ke === user.ulid;
+  });
+
+
+
+  //Fungsi untuk Page di Table
+  const [currentPage, setCurrentPage] = useState(1);
+  const [tasksPerPage] = useState(10);
+
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const pageNumbers = useMemo(() => {
+    return Array.from({ length: Math.ceil(tasks.length / tasksPerPage) }, (_, i) => i + 1);
+  }, [tasks.length, tasksPerPage]);
+
+
+  function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+ // Filter tasks based on search term
+ const filtereTasks = currentTasks.filter(task => {
+  const { judul, ditugaskan_ke_object } = task;
+  const firstName = ditugaskan_ke_object?.first_name || '';
+  const lastName = ditugaskan_ke_object?.last_name || '';
+
+  return (
+    judul.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lastName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+});
+
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'Pending':
+      return 'status-pending';
+    case 'In Progress':
+      return 'status-in-progress';
+    case 'Completed':
+      return 'status-completed';
+    default:
+      return '';
+  }
+};
 
   return (
     <div className="row">
       <div className="col-xl-12">
         <div className="card custom-card">
-          <div className="card-body p-0">
+          <div className="card-body p-1 justify-content-between">
             <div className="d-flex p-3 align-items-center justify-content-between">
               <div>
-                <h6 className="fw-semibold mb-0">Tasks</h6>
+                <h6 className="card-title">Task List View</h6>
               </div>
               <div>
-                <ul className="nav nav-tabs nav-tabs-header mb-0 d-sm-flex d-block" role="tablist">
+                <ul className="nav nav-tabs nav-tabs-header mb-0 d-sm-flex d-block ms-auto" role="tablist">
                   <li className="nav-item m-1">
                     <a
-                      className={`nav-link ${activeTab === 'all-tasks' ? 'active' : ''}`}
+                      className={`nav-link text-dark ${activeTab === 'all-tasks' ? 'active' : ''}`}
                       data-bs-toggle="tab"
                       role="tab"
                       aria-current="page"
@@ -212,7 +306,7 @@ const ListTask = () => {
                   </li>
                   <li className="nav-item m-1">
                     <a
-                      className={`nav-link ${activeTab === 'pending' ? 'active' : ''}`}
+                      className={`nav-link text-dark ${activeTab === 'pending' ? 'active' : ''}`}
                       data-bs-toggle="tab"
                       role="tab"
                       aria-current="page"
@@ -225,20 +319,20 @@ const ListTask = () => {
                   </li>
                   <li className="nav-item m-1">
                     <a
-                      className={`nav-link ${activeTab === 'in-progress' ? 'active' : ''}`}
+                      className={`nav-link text-dark ${activeTab === 'in_progress' ? 'active' : ''}`}
                       data-bs-toggle="tab"
                       role="tab"
                       aria-current="page"
-                      href="#in-progress"
-                      aria-selected={activeTab === 'in-progress'}
-                      onClick={() => handleTabClick('in-progress')}
+                      href="#in_progress"
+                      aria-selected={activeTab === 'in_progress'}
+                      onClick={() => handleTabClick('in_progress')}
                     >
                       In Progress
                     </a>
                   </li>
                   <li className="nav-item m-1">
                     <a
-                      className={`nav-link ${activeTab === 'completed' ? 'active' : ''}`}
+                      className={`nav-link text-dark ${activeTab === 'completed' ? 'active' : ''}`}
                       data-bs-toggle="tab"
                       role="tab"
                       aria-current="page"
@@ -258,62 +352,285 @@ const ListTask = () => {
 
       <div className="tab-content task-tabs-container">
         <div className={`tab-pane p-0 ${activeTab === 'all-tasks' ? 'active' : ''}`} id="all-tasks" role="tabpanel">
-          <div className="card custom-card mt-4">
-            <div className="card-body">
-              <div className="d-flex mb-3">
-                <input
-                  type="text"
-                  className="form-control form-control-sm w-auto mr-2"
-                  placeholder="Search Task..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-                <button
-                  className="btn btn-primary ms-2"
-                  data-bs-toggle="modal"
-                  data-bs-target="#createTaskModal"
-                >
-                  Create Task
-                </button>
-              </div>
-              <div className="table-responsive">
-                <table className="table table-bordered text-nowrap w-100">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '10%' }}>Task ID</th>
-                      <th style={{ width: '20%' }}>Judul Task</th>
-                      <th style={{ width: '20%' }}>Tanggal Mulai</th>
-                      <th style={{ width: '20%' }}>Tanggal Selesai</th>
-                      <th style={{ width: '10%' }}>Status</th>
-                      <th style={{ width: '20%' }}>Ditugaskan Ke</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTasks.length > 0 ? (
-                      filteredTasks.map((task) => (
-                        <tr key={task.id}>
-                          <td>{task.id}</td>
-                          <td>{task.judul}</td>
-                          <td>{task.tanggal_mulai}</td>
-                          <td>{task.tanggal_selesai}</td>
-                          <td>{task.status}</td>
-                          <td>{task.ditugaskan_ke.first_name}</td>
-                        </tr>
-                      ))
-                    ) : (
+          <div className="d-flex mt-4">
+            {/* Card pertama */}
+            <div className="card custom-card w-70 me-2"> {/* Gunakan 'me-2' untuk memberikan jarak antara dua card */}
+              <div className="card-body">
+                <div className="d-flex mb-3">
+                  <input
+                    type="text"
+                    className="form-control form-control-sm w-auto mr-2"
+                    placeholder="Search Task..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                  <button
+                    className="btn btn-primary ms-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#createTaskModal"
+                  >
+                    Create Task
+                  </button>
+                </div>
+                <div className="table-responsive">
+                  <table className="table table-bordered text-nowrap w-100">
+                    <thead>
                       <tr>
-                        <td colSpan="6">No task data available</td>
+                        <th style={{ width: '10%' }}>Task ID</th>
+                        <th style={{ width: '20%' }}>Judul Task</th>
+                        <th style={{ width: '20%' }}>Tanggal Mulai</th>
+                        <th style={{ width: '20%' }}>Tanggal Selesai</th>
+                        <th style={{ width: '10%' }}>Status</th>
+                        <th style={{ width: '20%' }}>Ditugaskan Ke</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filtereTasks.length > 0 ? (
+                        filtereTasks.map((task) => {
+                          const { first_name, last_name } = task.ditugaskan_ke_object;
+                          const initials = `${first_name?.charAt(0) || ''}${last_name?.charAt(0) || ''}`;
+                          const fullName = `${first_name || ''} ${last_name || ''}`;
+                          const color = getRandomColor(); // Generate random color
+                          return (
+                            <tr key={task.id}>
+                              <td>{task.id}</td>
+                              <td>{task.judul}</td>
+                              <td>{task.tanggal_mulai}</td>
+                              <td>{task.tanggal_selesai}</td>
+                              <td className={getStatusClass(task.status)}>
+                                {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                              </td>
+                              <td>
+                                <div className="initials-circle" style={{ backgroundColor: color }}>
+                                  {initials}
+                                  <div className="tooltip">{fullName}</div>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan="6">No task data available</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  <div className="card-footer">
+                    <nav aria-label="Page navigation">
+                      <ul className="pagination mb-0 float-end">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            Previous
+                          </button>
+                        </li>
+                        {pageNumbers.map((number) => (
+                          <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                            <button className="page-link" onClick={() => handlePageChange(number)}>
+                              {number}
+                            </button>
+                          </li>
+                        ))}
+                        <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === pageNumbers.length}
+                          >
+                            Next
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+              {/* Card kedua */}
+            <div className="card custom-card w-50 ms-2">
+              <div class="card custom-card">
+                <div class="card-body p-0">
+                  <div class="p-4 border-bottom border-block-end-dashed d-flex align-items-top">
+                    <div class="svg-icon-background bg-primary-transparent me-4"> 
+                        <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 24 24" class="svg-primary"><path d="M13,16H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2ZM9,10h2a1,1,0,0,0,0-2H9a1,1,0,0,0,0,2Zm12,2H18V3a1,1,0,0,0-.5-.87,1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0A1,1,0,0,0,2,3V19a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V13A1,1,0,0,0,21,12ZM5,20a1,1,0,0,1-1-1V4.73L6,5.87a1.08,1.08,0,0,0,1,0l3-1.72,3,1.72a1.08,1.08,0,0,0,1,0l2-1.14V19a3,3,0,0,0,.18,1Zm15-1a1,1,0,0,1-2,0V14h2Zm-7-7H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2Z"/></svg>
+                    </div> 
+                    <div class="flex-fill">
+                        <h6 class="mb-2 fs-12">All Tasks
+                          <span class="badge bg-primary fw-semibold float-end">
+                                    {tasks.length}
+                          </span> 
+                        </h6> 
+                        <div class="pb-0 mt-0"> 
+                            <div> 
+                              <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="42">{tasks.length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                                <p class="text-muted fs-11 mb-0 lh-1">
+                                <span class="text-success me-1 fw-semibold">
+                                    <i class="ri-arrow-up-s-line me-1 align-middle"></i>3.25%
+                                </span>
+                                <span>this month</span>
+                                    </p>
+                                </div> 
+                                </div> 
+                              </div>
+                            </div>
+                                        <div class="p-4 border-bottom border-block-end-dashed d-flex align-items-top">
+                                            <div class="svg-icon-background bg-success-transparent me-4"> 
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-success"><path d="M11.5,20h-6a1,1,0,0,1-1-1V5a1,1,0,0,1,1-1h5V7a3,3,0,0,0,3,3h3v5a1,1,0,0,0,2,0V9s0,0,0-.06a1.31,1.31,0,0,0-.06-.27l0-.09a1.07,1.07,0,0,0-.19-.28h0l-6-6h0a1.07,1.07,0,0,0-.28-.19.29.29,0,0,0-.1,0A1.1,1.1,0,0,0,11.56,2H5.5a3,3,0,0,0-3,3V19a3,3,0,0,0,3,3h6a1,1,0,0,0,0-2Zm1-14.59L15.09,8H13.5a1,1,0,0,1-1-1ZM7.5,14h6a1,1,0,0,0,0-2h-6a1,1,0,0,0,0,2Zm4,2h-4a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Zm-4-6h1a1,1,0,0,0,0-2h-1a1,1,0,0,0,0,2Zm13.71,6.29a1,1,0,0,0-1.42,0l-3.29,3.3-1.29-1.3a1,1,0,0,0-1.42,1.42l2,2a1,1,0,0,0,1.42,0l4-4A1,1,0,0,0,21.21,16.29Z"/></svg>
+                                            </div> 
+                                            <div class="flex-fill">
+                                                <h6 class="mb-2 fs-12">Completed Tasks
+                                                    <span class="badge bg-success fw-semibold float-end">
+                                                    {tasks.filter(i=>i.status === "Completed").length}
+                                                    </span> 
+                                                </h6> 
+                                                <div> 
+                                                    <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="319">{tasks.filter(i=>i.status === "Completed").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                                                    <p class="text-muted fs-11 mb-0 lh-1">
+                                                        <span class="text-danger me-1 fw-semibold">
+                                                            <i class="ri-arrow-down-s-line me-1 align-middle"></i>1.16%
+                                                        </span>
+                                                        <span>this month</span>
+                                                    </p>
+                                                </div> 
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-top p-4 border-bottom border-block-end-dashed">
+                                            <div class="svg-icon-background bg-warning-transparent me-4"> 
+                                                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-warning"><path d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
+                                            </div> 
+                                            <div class="flex-fill">
+                                                <h6 class="mb-2 fs-12">Pending Tasks
+                                                    <span class="badge bg-warning fw-semibold float-end">
+                                                    {tasks.filter(i=>i.status === "Pending").length}
+                                                    </span> 
+                                                </h6> 
+                                                <div> 
+                                                    <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="81">{tasks.filter(i=>i.status === "Pending").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                                                    <p class="text-muted fs-11 mb-0 lh-1">
+                                                        <span class="text-success me-1 fw-semibold">
+                                                            <i class="ri-arrow-up-s-line me-1 align-middle"></i>0.25%
+                                                        </span>
+                                                        <span>this month</span>
+                                                    </p>
+                                                </div> 
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-top p-4 border-bottom border-block-end-dashed">
+                                            <div class="svg-icon-background bg-secondary-transparent me-4"> 
+                                                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-secondary"><path d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
+                                            </div> 
+                                <div class="flex-fill">
+                                      <h6 class="mb-2 fs-12">Inprogress Tasks
+                                      <span class="badge bg-secondary fw-semibold float-end">
+                                      {tasks.filter(i=>i.status === "In Progress").length}
+                                      </span> 
+                                    </h6> 
+                                <div> 
+                                  
+                                <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="32">{tasks.filter(i=>i.status === "In Progress").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                                <p class="text-muted fs-11 mb-0 lh-1">
+                                <span class="text-success me-1 fw-semibFold">
+                                      <i class="ri-arrow-down-s-line me-1 align-middle"></i>0.46%
+                                </span>
+                                <span>this month</span>
+                                </p>
+                            </div> 
+                          </div>
+                        </div>
+                        <div class="p-4 pb-2">
+                          <p class="fs-15 fw-semibold">Tasks Statistics <span class="text-muted fw-normal">(Last 6 months) :</span></p>
+                        <div id="task-list-stats"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        
 
-        {/* Pending Tasks Tab */}
-        <div className={`tab-pane p-0 ${activeTab === 'pending' ? 'active' : ''}`} id="pending" role="tabpanel">
+          {/* Pending Tasks Tab */}
+          <div className={`tab-pane p-0 ${activeTab === 'pending' ? 'active' : ''}`} id="pending" role="tabpanel">
+            <div className="card custom-card mt-4">
+              <div className="card-body">
+                <div className="d-flex mb-3">
+                  <input
+                    type="text"
+                    className="form-control form-control-sm w-auto mr-2"
+                    placeholder="Search Task..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </div>
+                <div className="row">
+                  {pendingTasks.length > 0 ? (
+                    pendingTasks.map((task) => {
+                      // Mendapatkan data dari task
+                      const { first_name: firstNameDitugaskanKe, last_name: lastNameDitugaskanKe } = task.ditugaskan_ke_object || {};
+                      const { first_name: firstNamePemberiTugas, last_name: lastNamePemberiTugas } = task.pemberi_tugas_object || {};
+                      
+                      // Mengambil inisial dan nama lengkap
+                      const initialsDitugaskanKe = `${firstNameDitugaskanKe?.charAt(0) || ''}${lastNameDitugaskanKe?.charAt(0) || ''}`;
+                      const fullNameDitugaskanKe = `${firstNameDitugaskanKe || ''} ${lastNameDitugaskanKe || ''}`;
+                      const colorDitugaskanKe = getRandomColor(initialsDitugaskanKe);
+                      
+                      const initialsPemberiTugas = `${firstNamePemberiTugas?.charAt(0) || ''}${lastNamePemberiTugas?.charAt(0) || ''}`;
+                      const fullNamePemberiTugas = `${firstNamePemberiTugas || ''} ${lastNamePemberiTugas || ''}`;
+                      const colorPemberiTugas = getRandomColor(initialsPemberiTugas);
+
+                      return (
+                        <div className="col-md-6 col-lg-4 col-xl-3" key={task.id}>
+                          <div className="card mb-4">
+                            <div className="card-body">
+                              <div className="d-flex justify-content-between">
+                                <div>
+                                  <h6 className="fw-semibold mb-0">{task.judul}</h6>
+                                  <p className="mb-0">Tanggal Mulai: <span className="fs-12 mb-1 text-muted">{task.tanggal_mulai}</span></p>
+                                  <p className="mb-3">Tanggal Selesai: <span className="fs-12 text-muted">{task.tanggal_selesai}</span></p>
+                                </div>
+                                <div className="btn-list">
+                                  <button className="btn btn-sm btn-icon btn-wave btn-primary-light" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}><i className="ri-edit-line"></i></button>
+                                  <button className="btn btn-sm btn-icon btn-wave btn-danger-light me-0"><i className="ri-delete-bin-line"></i></button>
+                                </div>
+                              </div>
+                              <div className="d-flex justify-content-between align-items-center">
+                                
+                                <div className="d-flex align-items-center">
+                                  <div className="initials-circle" style={{ backgroundColor: colorPemberiTugas }}>
+                                      {initialsPemberiTugas}
+                                      <div className="tooltip">{fullNamePemberiTugas}</div>
+                                  </div>
+                                  <div className="initials-circle" style={{ backgroundColor: colorDitugaskanKe }}>
+                                      {initialsDitugaskanKe}
+                                      <div className="tooltip">{fullNameDitugaskanKe}</div>
+                                  </div>       
+                                </div>
+                                <div className="d-flex align-items-center">
+                                  <span className="badge bg-danger">{task.status}</span>
+                                  <span className={`badge bg-warning-transparent d-block`}>{task.urgensi}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="col-12">
+                      <p>No pending tasks available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+         {/* In Progress Tasks Tab */}
+         <div className={`tab-pane p-0 ${activeTab === 'in_progress' ? 'active' : ''}`} id="in_progress" role="tabpanel">
           <div className="card custom-card mt-4">
             <div className="card-body">
               <div className="d-flex mb-3">
@@ -326,8 +643,22 @@ const ListTask = () => {
                 />
               </div>
               <div className="row">
-                {pendingTasks.length > 0 ? (
-                  pendingTasks.map((task) => (
+                {inProgressTasks.length > 0 ? (
+                  inProgressTasks.map((task) => {
+                       // Mendapatkan data dari task
+                    const { first_name: firstNameDitugaskanKe, last_name: lastNameDitugaskanKe } = task.ditugaskan_ke_object || {};
+                    const { first_name: firstNamePemberiTugas, last_name: lastNamePemberiTugas } = task.pemberi_tugas_object || {};
+                    
+                    // Mengambil inisial dan nama lengkap
+                    const initialsDitugaskanKe = `${firstNameDitugaskanKe?.charAt(0) || ''}${lastNameDitugaskanKe?.charAt(0) || ''}`;
+                    const fullNameDitugaskanKe = `${firstNameDitugaskanKe || ''} ${lastNameDitugaskanKe || ''}`;
+                    const colorDitugaskanKe = getRandomColor(initialsDitugaskanKe);
+                    
+                    const initialsPemberiTugas = `${firstNamePemberiTugas?.charAt(0) || ''}${lastNamePemberiTugas?.charAt(0) || ''}`;
+                    const fullNamePemberiTugas = `${firstNamePemberiTugas || ''} ${lastNamePemberiTugas || ''}`;
+                    const colorPemberiTugas = getRandomColor(initialsPemberiTugas);
+
+                    return (
                     <div className="col-md-6 col-lg-4 col-xl-3" key={task.id}>
                       <div className="card mb-4">
                         <div className="card-body">
@@ -343,16 +674,105 @@ const ListTask = () => {
                             </div>
                           </div>
                           <div className="d-flex justify-content-between align-items-center">
-                            <span className="badge bg-danger">{task.status}</span>
-                            <div>
-                            
-                                <span class="badge bg-warning-transparent d-block">{task.urgensi}</span>
+                              
+                              <div className="d-flex align-items-center">
+                                <div className="initials-circle" style={{ backgroundColor: colorPemberiTugas }}>
+                                    {initialsPemberiTugas}
+                                    <div className="tooltip">{fullNamePemberiTugas}</div>
+                                </div>
+                                <div className="initials-circle" style={{ backgroundColor: colorDitugaskanKe }}>
+                                    {initialsDitugaskanKe}
+                                    <div className="tooltip">{fullNameDitugaskanKe}</div>
+                                </div>       
+                              </div>
+                              <div className="d-flex align-items-center">
+                                <span className="badge bg-secondary">{task.status}</span>
+                                <span className={`badge bg-warning-transparent d-block`}>{task.urgensi}</span>
+                              </div>
                             </div>
-                          </div>
                         </div>
                       </div>
                     </div>
-                  ))
+                    );
+                  })
+                ) : (
+                  <div className="col-12">
+                    <p>No pending tasks available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      
+
+       {/* completed Tasks Tab */}
+       <div className={`tab-pane p-0 ${activeTab === 'completed' ? 'active' : ''}`} id="completed" role="tabpanel">
+          <div className="card custom-card mt-4">
+            <div className="card-body">
+              <div className="d-flex mb-3">
+                <input
+                  type="text"
+                  className="form-control form-control-sm w-auto mr-2"
+                  placeholder="Search Task..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
+              </div>
+              <div className="row">
+                {completedTasks.length > 0 ? (
+                  completedTasks.map((task) => {
+
+                     // Mendapatkan data dari task
+                     const { first_name: firstNameDitugaskanKe, last_name: lastNameDitugaskanKe } = task.ditugaskan_ke_object || {};
+                     const { first_name: firstNamePemberiTugas, last_name: lastNamePemberiTugas } = task.pemberi_tugas_object || {};
+                     
+                     // Mengambil inisial dan nama lengkap
+                     const initialsDitugaskanKe = `${firstNameDitugaskanKe?.charAt(0) || ''}${lastNameDitugaskanKe?.charAt(0) || ''}`;
+                     const fullNameDitugaskanKe = `${firstNameDitugaskanKe || ''} ${lastNameDitugaskanKe || ''}`;
+                     const colorDitugaskanKe = getRandomColor(initialsDitugaskanKe);
+                     
+                     const initialsPemberiTugas = `${firstNamePemberiTugas?.charAt(0) || ''}${lastNamePemberiTugas?.charAt(0) || ''}`;
+                     const fullNamePemberiTugas = `${firstNamePemberiTugas || ''} ${lastNamePemberiTugas || ''}`;
+                     const colorPemberiTugas = getRandomColor(initialsPemberiTugas);
+
+                     return (
+                    <div className="col-md-6 col-lg-4 col-xl-3" key={task.id}>
+                      <div className="card mb-4">
+                        <div className="card-body">
+                          <div className="d-flex justify-content-between">
+                            <div>
+                              <h6 className="fw-semibold mb-0">{task.judul}</h6>
+                              <p className="mb-0">Tanggal Mulai: <span className="fs-12 mb-1 text-muted">{task.tanggal_mulai}</span></p>
+                              <p className="mb-3">Tanggal Selesai: <span className="fs-12 text-muted">{task.tanggal_selesai}</span></p>
+                            </div>
+                            <div class="btn-list">
+                                  <button class="btn btn-sm btn-icon btn-wave btn-primary-light" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}><i class="ri-edit-line"></i></button>
+                                  <button class="btn btn-sm btn-icon btn-wave btn-danger-light me-0"><i class="ri-delete-bin-line"></i></button>
+                            </div>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center">
+                              
+                              <div className="d-flex align-items-center">
+                                <div className="initials-circle" style={{ backgroundColor: colorPemberiTugas }}>
+                                    {initialsPemberiTugas}
+                                    <div className="tooltip">{fullNamePemberiTugas}</div>
+                                </div>
+                                <div className="initials-circle" style={{ backgroundColor: colorDitugaskanKe }}>
+                                    {initialsDitugaskanKe}
+                                    <div className="tooltip">{fullNameDitugaskanKe}</div>
+                                </div>       
+                              </div>
+                              <div className="d-flex align-items-center">
+                                <span className="badge bg-primary">{task.status}</span>
+                                <span className={`badge bg-warning-transparent d-block`}>{task.urgensi}</span>
+                              </div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
                 ) : (
                   <div className="col-12">
                     <p>No pending tasks available</p>
@@ -396,6 +816,17 @@ const ListTask = () => {
                 />
               </div>
               <div className="mb-3">
+                <label htmlFor="deskripsi" className="form-label">Deskripsi</label>
+                <textarea
+                  type="text"
+                  className="form-control"
+                  id="deskripsi"
+                  name="deskripsi"
+                  value={newTask.deskripsi}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="mb-3">
                 <label htmlFor="tanggal_mulai" className="form-label">Tanggal Mulai</label>
                 <input
                   type="date"
@@ -404,6 +835,7 @@ const ListTask = () => {
                   name="tanggal_mulai"
                   value={newTask.tanggal_mulai}
                   onChange={handleInputChange}
+                  onFocus={(e) => e.target.showPicker()}
                 />
               </div>
               <div className="mb-3">
@@ -415,6 +847,7 @@ const ListTask = () => {
                   name="tanggal_selesai"
                   value={newTask.tanggal_selesai}
                   onChange={handleInputChange}
+                  onFocus={(e) => e.target.showPicker()}
                 />
               </div>
               <div className="mb-3">
@@ -470,17 +903,10 @@ const ListTask = () => {
             </div>
           </div>
         </div>
-
+      </div>
 
         {/* Modal Edit Task */}
-<div
-  className="modal fade"
-  id="editTaskModal"
-  tabIndex="-1"
-  aria-labelledby="editTaskModalLabel"
-  aria-hidden="true"
->
-<div
+      <div
         className="modal fade"
         id="editTaskModal"
         tabIndex="-1"
@@ -521,6 +947,7 @@ const ListTask = () => {
                       name="tanggal_mulai"
                       value={editTask.tanggal_mulai}
                       onChange={(e) => setEditTask({ ...editTask, tanggal_mulai: e.target.value })}
+                      onFocus={(e) => e.target.showPicker()}
                     />
                   </div>
                   <div className="mb-3">
@@ -532,21 +959,22 @@ const ListTask = () => {
                       name="tanggal_selesai"
                       value={editTask.tanggal_selesai}
                       onChange={(e) => setEditTask({ ...editTask, tanggal_selesai: e.target.value })}
+                      onFocus={(e) => e.target.showPicker()}
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editUrgensi" className="form-label">Urgensi</label>
+                    <label htmlFor="editStatus" className="form-label">Status</label>
                     <select
                       className="form-select"
-                      id="editUrgensi"
-                      name="urgensi"
-                      value={editTask.urgensi}
-                      onChange={(e) => setEditTask({ ...editTask, urgensi: e.target.value })}
+                      id="editStatus"
+                      name="status"
+                      value={editTask.status}
+                      onChange={(e) => setEditTask({ ...editTask, status: e.target.value })}
                     >
-                      <option value="">Pilih Urgensi</option>
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
+                      <option value="">Pilih Status</option>
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
                     </select>
                   </div>
                   <div className="mb-3">
@@ -555,7 +983,7 @@ const ListTask = () => {
                       className="form-select"
                       id="editDitugaskanKe"
                       name="ditugaskan_ke"
-                      value={editTask.ditugaskan_ke}
+                      value={(typeof editTask.ditugaskan_ke  == 'string') ? editTask.ditugaskan_ke : editTask.ditugaskan_ke.ulid}
                       onChange={(e) => setEditTask({ ...editTask, ditugaskan_ke: e.target.value })}
                     >
                       <option value="">Pilih Pengguna</option>
@@ -581,6 +1009,7 @@ const ListTask = () => {
                 type="button"
                 className="btn btn-primary"
                 onClick={handleEditTask}
+                data-bs-dismiss="modal"
               >
                 Save Changes
               </button>
@@ -589,9 +1018,7 @@ const ListTask = () => {
         </div>
       </div>
 </div>
-
-      </div>
-    </div>
+    
   );
 };
 

@@ -286,3 +286,81 @@ body.sidebar-minimized .main-header-container .header-element img {
 #addEmployeeBtn {
   margin-left: 10px;
 }
+
+
+/* CSS */
+.initials-circle {
+  width: 40px; /* Adjust the size as needed */
+  height: 40px; /* Adjust the size as needed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* Circle shape */
+  color: #fff; /* Text color */
+  font-weight: bold;
+  font-size: 14px; /* Font size */
+  position: relative; /* Required for positioning tooltip */
+  cursor: pointer; /* Show a pointer cursor on hover */
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%; /* Position above the element */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333; /* Background color of tooltip */
+  color: #fff; /* Text color of tooltip */
+  padding: 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s;
+  visibility: hidden; /* Initially hidden */
+}
+
+.initials-circle:hover .tooltip {
+  opacity: 1; /* Show tooltip on hover */
+  visibility: visible; /* Make tooltip visible */
+}
+
+
+.input-group {
+  display: flex;
+  align-items: center;
+}
+
+.input-group .input-group-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  margin-left: 10px;
+}
+
+.initials-circle {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.status-pending {
+  color: red !important;
+}
+
+.status-in-progress {
+  color: green !important;
+}
+
+.status-completed {
+  color: blue !important;
+}
+
+

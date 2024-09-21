@@ -66,7 +66,7 @@ const FormAddSchedule = () => {
   // Convert user data for react-select
   const userOptions = users.map(user => ({
     value: user.ulid,
-    label: `${user.first_name} ${user.last_name || ''}`
+    label: `${user.first_name} ${user.last_name || ''}\n${user.email}`
   }));
 
   // Fetch schedule based on selected location and date
@@ -98,6 +98,51 @@ const FormAddSchedule = () => {
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Siapkan payload yang sesuai dengan format backend
+    const payload = {
+      start: date,
+      location_ulid: location,
+      minggu_opening: selectedUsers['Minggu-Opening'].map(user => user.value),
+      minggu_middle: selectedUsers['Minggu-Middle'].map(user => user.value),
+      minggu_closing: selectedUsers['Minggu-Closing'].map(user => user.value),
+      senin_opening: selectedUsers['Senin-Opening'].map(user => user.value),
+      senin_middle: selectedUsers['Senin-Middle'].map(user => user.value),
+      senin_closing: selectedUsers['Senin-Closing'].map(user => user.value),
+      selasa_opening: selectedUsers['Selasa-Opening'].map(user => user.value),
+      selasa_middle: selectedUsers['Selasa-Middle'].map(user => user.value),
+      selasa_closing: selectedUsers['Selasa-Closing'].map(user => user.value),
+      rabu_opening: selectedUsers['Rabu-Opening'].map(user => user.value),
+      rabu_middle: selectedUsers['Rabu-Middle'].map(user => user.value),
+      rabu_closing: selectedUsers['Rabu-Closing'].map(user => user.value),
+      kamis_opening: selectedUsers['Kamis-Opening'].map(user => user.value),
+      kamis_middle: selectedUsers['Kamis-Middle'].map(user => user.value),
+      kamis_closing: selectedUsers['Kamis-Closing'].map(user => user.value),
+      jumat_opening: selectedUsers['Jumat-Opening'].map(user => user.value),
+      jumat_middle: selectedUsers['Jumat-Middle'].map(user => user.value),
+      jumat_closing: selectedUsers['Jumat-Closing'].map(user => user.value),
+      sabtu_opening: selectedUsers['Sabtu-Opening'].map(user => user.value),
+      sabtu_middle: selectedUsers['Sabtu-Middle'].map(user => user.value),
+      sabtu_closing: selectedUsers['Sabtu-Closing'].map(user => user.value)
+    };
+
+    try {
+      // Kirim data menggunakan POST ke endpoint yang benar
+      const response = await axios.post(`/v1/jadwal/${location}/${date}`, payload);
+
+      if (response.status === 200) {
+        alert('Jadwal berhasil disimpan');
+      } else {
+        alert('Gagal menyimpan jadwal');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Terjadi kesalahan saat menyimpan jadwal');
+    }
+  };
+
   return (
     <div>
       <div className="card custom-card">
@@ -126,6 +171,7 @@ const FormAddSchedule = () => {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                onFocus={(e) => e.target.showPicker()}
                 className="form-control"
               />
             </div>
@@ -173,6 +219,9 @@ const FormAddSchedule = () => {
             </tbody>
           </table>
         )}
+        <button onClick={handleSubmit} className="btn btn-primary mt-3">
+          Submit Jadwal
+        </button>
       </div>
     </div>
   );
