@@ -77,8 +77,54 @@ const FormAddSchedule = () => {
 
       const fetchSchedule = async () => {
         try {
-          const response = await axios.get(`/v1/location/${location}/${date}`);
+          const response = await axios.get(`/v1/jadwal/${location}/${date}`);
           setScheduleData(response.data);
+          
+          const getUser = (userUlid) =>  {
+            const u = users.find(u=>u.ulid === userUlid)
+            return {value: u.ulid,
+                label: `${u.first_name} ${u.last_name || ''}\n${u.email}`}
+        }
+
+        setSelectedUsers(prevState => ({
+            ...prevState,
+            // Minggu
+            'Minggu-Opening': response.data.minggu_opening.map(userUlid => getUser(userUlid)),
+            'Minggu-Middle': response.data.minggu_middle.map(userUlid => getUser(userUlid)),
+            'Minggu-Closing': response.data.minggu_closing.map(userUlid => getUser(userUlid)),
+            
+            // Senin
+            'Senin-Opening': response.data.senin_opening.map(userUlid => getUser(userUlid)),
+            'Senin-Middle': response.data.senin_middle.map(userUlid => getUser(userUlid)),
+            'Senin-Closing': response.data.senin_closing.map(userUlid => getUser(userUlid)),
+          
+            // Selasa
+            'Selasa-Opening': response.data.selasa_opening.map(userUlid => getUser(userUlid)),
+            'Selasa-Middle': response.data.selasa_middle.map(userUlid => getUser(userUlid)),
+            'Selasa-Closing': response.data.selasa_closing.map(userUlid => getUser(userUlid)),
+          
+            // Rabu
+            'Rabu-Opening': response.data.rabu_opening.map(userUlid => getUser(userUlid)),
+            'Rabu-Middle': response.data.rabu_middle.map(userUlid => getUser(userUlid)),
+            'Rabu-Closing': response.data.rabu_closing.map(userUlid => getUser(userUlid)),
+          
+            // Kamis
+            'Kamis-Opening': response.data.kamis_opening.map(userUlid => getUser(userUlid)),
+            'Kamis-Middle': response.data.kamis_middle.map(userUlid => getUser(userUlid)),
+            'Kamis-Closing': response.data.kamis_closing.map(userUlid => getUser(userUlid)),
+          
+            // Jumat
+            'Jumat-Opening': response.data.jumat_opening.map(userUlid => getUser(userUlid)),
+            'Jumat-Middle': response.data.jumat_middle.map(userUlid => getUser(userUlid)),
+            'Jumat-Closing': response.data.jumat_closing.map(userUlid => getUser(userUlid)),
+          
+            // Sabtu
+            'Sabtu-Opening': response.data.sabtu_opening.map(userUlid => getUser(userUlid)),
+            'Sabtu-Middle': response.data.sabtu_middle.map(userUlid => getUser(userUlid)),
+            'Sabtu-Closing': response.data.sabtu_closing.map(userUlid => getUser(userUlid)),
+          }));
+          
+
         } catch (err) {
           setError('Terjadi kesalahan saat mengambil data jadwal.');
         } finally {
@@ -88,10 +134,11 @@ const FormAddSchedule = () => {
 
       fetchSchedule();
     }
-  }, [location, date]);
+  }, [location, date,users]);
 
   // Function to handle user selection change
   const handleAssignChange = (selectedOptions, { name }) => {
+    console.log(selectedUsers)
     setSelectedUsers(prevState => ({
       ...prevState,
       [name]: selectedOptions
@@ -142,6 +189,7 @@ const FormAddSchedule = () => {
       alert('Terjadi kesalahan saat menyimpan jadwal');
     }
   };
+
 
   return (
     <div>
@@ -219,10 +267,13 @@ const FormAddSchedule = () => {
             </tbody>
           </table>
         )}
+       {/* Tampilkan tombol submit hanya jika lokasi dan tanggal sudah dipilih */}
+      {location && date && (
         <button onClick={handleSubmit} className="btn btn-primary mt-3">
           Submit Jadwal
         </button>
-      </div>
+      )}
+    </div>
     </div>
   );
 };

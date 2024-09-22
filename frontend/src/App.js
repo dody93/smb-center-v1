@@ -10,6 +10,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Users from "./pages/Users";
 import Employee from "./pages/Employee";
 import Shift from "./pages/Shift";
+import Absen from "./pages/Absen";
 import Task from "./pages/Task";
 import AddEmployee from "./pages/AddEmployee";
 import AddSchedule from "./pages/AddSchedule";
@@ -36,6 +37,7 @@ function App() {
             <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
             <Route path="/employee" element={<PrivateRoute element={<Employee />} />} />
             <Route path="/shift" element={<PrivateRoute element={<Shift />} />} />
+            <Route path="/absen" element={<PrivateRoute element={<Absen />} />} />
             <Route path="/listtask" element={<PrivateRoute element={<Task />} />} />
             <Route path="/addemployee" element={<PrivateRoute element={<AddEmployee />} />} />
             <Route path="/addschedule" element={<PrivateRoute element={<AddSchedule />} />} />

@@ -44,7 +44,7 @@ const Sidebar = () => {
                 </Link>
               </li>
               <li className="slide has-sub">
-                <Link to="/shift" className={`side-menu__item ${isActive('/shift') ? 'active' : ''}`}>
+                <Link to="/absen" className={`side-menu__item ${isActive('/shift') ? 'active' : ''}`}>
                   <i className="bx bx-task side-menu__icon"></i>
                   <span className="side-menu__label">Management Shifting</span>
                 </Link>

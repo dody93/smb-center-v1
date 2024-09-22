@@ -2,29 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const ShiftList = () => {
-  const [shiftData, setShiftData] = useState([]);
+const UserList = () => {
+  const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showShiftModal, setShowShiftModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    start: '',
-    end: ''
-  });
-  const [assignData, setAssignData] = useState({
-    employee: '',
-    outlet: '',
-    date: ''
-  });
-  //const [outlets, setOutlets] = useState([]); // Untuk data outlet
+  const [showUserModal, setShowUserModal] = useState(false);
 
   useEffect(() => {
-    const fetchShiftData = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await fetch('/v1/scheduling/shift', {
+        const response = await fetch('/v1/select/user', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -37,71 +25,27 @@ const ShiftList = () => {
         const result = await response.json();
 
         if (Array.isArray(result)) {
-          setShiftData(result);
+          setUserData(result);
         } else {
           setError('Unexpected response format');
         }
       } catch (error) {
-        console.error('Error fetching shift data:', error);
-        setError('Error fetching shift data');
+        console.error('Error fetching user data:', error);
+        setError('Error fetching user data');
       } finally {
         setLoading(false);
       }
     };
 
-    // Hapus atau nonaktifkan bagian ini sementara jika endpoint outlet menyebabkan masalah
-    // const fetchOutlets = async () => {
-    //   try {
-    //     const response = await fetch('/v1/outlets'); // Ganti dengan endpoint yang sesuai
-    //     const result = await response.json();
-    //     if (Array.isArray(result)) {
-    //       setOutlets(result);
-    //     } else {
-    //       setError('Unexpected outlets response format');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching outlets data:', error);
-    //     setError('Error fetching outlets data');
-    //   }
-    // };
-
-    fetchShiftData();
-    // fetchOutlets(); // Hapus atau nonaktifkan sementara
+    fetchUserData();
   }, []);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleShowShiftModal = () => setShowShiftModal(true);
-  const handleCloseShiftModal = () => setShowShiftModal(false);
-
-  const handleShowAssignModal = () => setShowAssignModal(true);
-  const handleCloseAssignModal = () => setShowAssignModal(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleAssignChange = (e) => {
-    const { name, value } = e.target;
-    setAssignData({ ...assignData, [name]: value });
-  };
-
-  const handleShiftFormSubmit = (e) => {
-    e.preventDefault();
-    // Implementasi untuk mengirim data shift form
-    console.log('Shift Form Data:', formData);
-    handleCloseShiftModal();
-  };
-
-  const handleAssignFormSubmit = (e) => {
-    e.preventDefault();
-    // Implementasi untuk mengirim data assign form
-    console.log('Assign Form Data:', assignData);
-    handleCloseAssignModal();
-  };
+  const handleShowUserModal = () => setShowUserModal(true);
+  const handleCloseUserModal = () => setShowUserModal(false);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -111,8 +55,10 @@ const ShiftList = () => {
     return <div>{error}</div>;
   }
 
-  const filteredShifts = shiftData.filter(shift =>
-    shift.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = userData.filter(user =>
+    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.last_name && user.last_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -131,44 +77,35 @@ const ShiftList = () => {
                 value={searchTerm}
                 onChange={handleSearch}
               />
-              <Button className="btn btn-primary btn-sm" onClick={handleShowShiftModal}>
+              <Button className="btn btn-primary btn-sm" onClick={handleShowUserModal}>
                 <i className="ri-add-line me-1 fw-semibold align-middle"></i>Tambah Karyawan
               </Button>
             </div>
           </div>
           <div className="card-body">
             <div className="table-responsive">
-              <table id="shift-table" className="table table-bordered text-nowrap w-100">
+              <table id="user-table" className="table table-bordered text-nowrap w-100">
                 <thead>
                   <tr>
-                  <th style={{ width: '10%' }}>Shift ID</th>
-                    <th style={{ width: '30%' }}>Nama Shift</th>
-                    <th style={{ width: '20%' }}>Start Time</th>
-                    <th style={{ width: '20%' }}>End Time</th>
-                    <th style={{ width: '20%' }}>Actions</th> 
+                    <th style={{ width: '10%' }}>User ID</th>
+                    <th style={{ width: '30%' }}>Nama Depan</th>
+                    <th style={{ width: '30%' }}>Nama Belakang</th>
+                    <th style={{ width: '30%' }}>Email</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredShifts.length > 0 ? (
-                    filteredShifts.map((shift, index) => (
-                      <tr key={shift.id}>
-                        <td>{shift.id}</td>
-                        <td>{shift.name}</td>
-                        <td>{shift.start}</td>
-                        <td>{shift.end}</td>
-                        <td>
-                          <Button 
-                            variant="secondary" 
-                            onClick={handleShowAssignModal}
-                          >
-                            Assign Schedule
-                          </Button>
-                        </td>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user, index) => (
+                      <tr key={user.ulid}>
+                        <td>{user.ulid}</td>
+                        <td>{user.first_name}</td>
+                        <td>{user.last_name ? user.last_name : '-'}</td>
+                        <td>{user.email}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5">No shift data available</td>
+                      <td colSpan="4">No user data available</td>
                     </tr>
                   )}
                 </tbody>
@@ -178,103 +115,46 @@ const ShiftList = () => {
         </div>
       </div>
 
-      {/* Modal untuk Tambah Shift */}
-      <Modal show={showShiftModal} onHide={handleCloseShiftModal} centered>
+      {/* Modal untuk Tambah Karyawan */}
+      <Modal show={showUserModal} onHide={handleCloseUserModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Tambah Karyawan</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleShiftFormSubmit}>
-            <Form.Group controlId="formShiftName">
-              <Form.Label>Shift Name</Form.Label>
+          <Form>
+            {/* Form input untuk data karyawan */}
+            <Form.Group controlId="formFirstName">
+              <Form.Label>Nama Depan</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Enter shift name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
+                placeholder="Enter first name"
+                name="first_name"
                 required
               />
             </Form.Group>
-            <Form.Group controlId="formStartTime">
-              <Form.Label>Start Time</Form.Label>
+            <Form.Group controlId="formLastName">
+              <Form.Label>Nama Belakang</Form.Label>
               <Form.Control
-                type="time"
-                name="start"
-                value={formData.start}
-                onChange={handleInputChange}
-                required
+                type="text"
+                placeholder="Enter last name"
+                name="last_name"
               />
             </Form.Group>
-            <Form.Group controlId="formEndTime">
-              <Form.Label>End Time</Form.Label>
+            <Form.Group controlId="formEmail">
+              <Form.Label>Email</Form.Label>
               <Form.Control
-                type="time"
-                name="end"
-                value={formData.end}
-                onChange={handleInputChange}
+                type="email"
+                placeholder="Enter email"
+                name="email"
                 required
               />
             </Form.Group>
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseShiftModal}>
+              <Button variant="secondary" onClick={handleCloseUserModal}>
                 Cancel
               </Button>
               <Button variant="primary" type="submit">
-                Save Shift
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal untuk Assign Schedule */}
-      <Modal show={showAssignModal} onHide={handleCloseAssignModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Assign Schedule</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleAssignFormSubmit}>
-            <Form.Group controlId="formEmployee">
-              <Form.Label>Employee  <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter employee name"
-                name="employee"
-                value={assignData.employee}
-                onChange={handleAssignChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formOutlet">
-              <Form.Label>Outlet  <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                as="select"
-                name="outlet"
-                value={assignData.outlet}
-                onChange={handleAssignChange}
-                required
-              >
-                <option value="">Select Outlet</option>
-               
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="formDate">
-              <Form.Label>Date  <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                type="date"
-                name="date"
-                value={assignData.date}
-                onChange={handleAssignChange}
-                required
-              />
-            </Form.Group>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseAssignModal}>
-                Cancel
-              </Button>
-              <Button variant="primary" type="submit">
-                Assign
+                Save Karyawan
               </Button>
             </Modal.Footer>
           </Form>
@@ -284,4 +164,4 @@ const ShiftList = () => {
   );
 };
 
-export default ShiftList;
+export default UserList;

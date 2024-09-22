@@ -23,8 +23,15 @@ const ListTask = () => {
 
   const [assignedUsers, setAssignedUsers] = useState([]); // State untuk pengguna yang ditugaskan
   const [user, setuser] = useState([]); // State untuk pengguna yang ditugaskan
+  const [assignedToFilter, setAssignedToFilter] = useState('');
+  const [selectedTask, setSelectedTask] = useState(null); // State untuk menyimpan task yang dipilih
 
 
+
+  const handleViewDetails = (task) => {
+    setSelectedTask(task); // Simpan task yang dipilih ke state
+  };
+  
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -204,6 +211,40 @@ const ListTask = () => {
       console.error('Error editing task:', error);
     }
   };
+
+  const handleDelete = async (taskId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this task?');
+  
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`/v1/tugas/${taskId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        // Menghapus task dari state setelah berhasil dihapus
+        setTasks(tasks.filter(task => task.id !== taskId));
+  
+        // Reset editTask ke null setelah penghapusan
+        setEditTask(null);
+  
+        alert('Task deleted successfully.');
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        alert(`Failed to delete task: ${error.message}`);
+      }
+    }
+  };
+  
+  
+  
+
   
   
   
@@ -224,6 +265,9 @@ const ListTask = () => {
     console.log(`Filtering task with status: ${task.status}`);
     return task.status.toLowerCase() === 'completed' && task.ditugaskan_ke === user.ulid;
   });
+
+
+
 
 
 
@@ -364,13 +408,26 @@ const getStatusClass = (status) => {
                     value={searchTerm}
                     onChange={handleSearch}
                   />
-                  <button
+
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-wave"
+                      data-bs-toggle="modal"
+                      data-bs-target="#filterModal"
+                    >
+                      <i className="ri-filter-3-fill me-2 align-middle d-inline-block"></i>Filters
+                    </button>
+                  
+                   {/* Bagian kanan: Filters */}
+                  <div className="ms-auto">
+                    <button
                     className="btn btn-primary ms-2"
                     data-bs-toggle="modal"
                     data-bs-target="#createTaskModal"
                   >
                     Create Task
                   </button>
+                  </div>
                 </div>
                 <div className="table-responsive">
                   <table className="table table-bordered text-nowrap w-100">
@@ -391,12 +448,16 @@ const getStatusClass = (status) => {
                           const initials = `${first_name?.charAt(0) || ''}${last_name?.charAt(0) || ''}`;
                           const fullName = `${first_name || ''} ${last_name || ''}`;
                           const color = getRandomColor(); // Generate random color
+                             // Check if the task is overdue
+                          const isOverdue = new Date(task.tanggal_selesai) < new Date();
                           return (
                             <tr key={task.id}>
                               <td>{task.id}</td>
                               <td>{task.judul}</td>
                               <td>{task.tanggal_mulai}</td>
-                              <td>{task.tanggal_selesai}</td>
+                              <td style={{ color: isOverdue ? 'red' : 'inherit' }}>
+                                  {task.tanggal_selesai}
+                              </td>
                               <td className={getStatusClass(task.status)}>
                                 {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                               </td>
@@ -466,83 +527,103 @@ const getStatusClass = (status) => {
                           </span> 
                         </h6> 
                         <div class="pb-0 mt-0"> 
+                          <div> 
+                            <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="42">{tasks.length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                            <p class="text-muted fs-11 mb-0 lh-1">
+                              <span class="text-success me-1 fw-semibold">
+                                  <i class="ri-arrow-up-s-line me-1 align-middle"></i>3.25%
+                              </span>
+                              <span>this month</span>
+                            </p>
+                          </div> 
+                        </div> 
+                      </div>
+                    </div>
+                    <div class="p-4 border-bottom border-block-end-dashed d-flex align-items-top">
+                      <div class="svg-icon-background bg-success-transparent me-4"> 
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-success"><path d="M11.5,20h-6a1,1,0,0,1-1-1V5a1,1,0,0,1,1-1h5V7a3,3,0,0,0,3,3h3v5a1,1,0,0,0,2,0V9s0,0,0-.06a1.31,1.31,0,0,0-.06-.27l0-.09a1.07,1.07,0,0,0-.19-.28h0l-6-6h0a1.07,1.07,0,0,0-.28-.19.29.29,0,0,0-.1,0A1.1,1.1,0,0,0,11.56,2H5.5a3,3,0,0,0-3,3V19a3,3,0,0,0,3,3h6a1,1,0,0,0,0-2Zm1-14.59L15.09,8H13.5a1,1,0,0,1-1-1ZM7.5,14h6a1,1,0,0,0,0-2h-6a1,1,0,0,0,0,2Zm4,2h-4a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Zm-4-6h1a1,1,0,0,0,0-2h-1a1,1,0,0,0,0,2Zm13.71,6.29a1,1,0,0,0-1.42,0l-3.29,3.3-1.29-1.3a1,1,0,0,0-1.42,1.42l2,2a1,1,0,0,0,1.42,0l4-4A1,1,0,0,0,21.21,16.29Z"/></svg>
+                      </div> 
+                      <div class="flex-fill">
+                          <h6 class="mb-2 fs-12">Completed Tasks
+                             <span class="badge bg-success fw-semibold float-end">
+                                  {tasks.filter(i=>i.status === "Completed").length}
+                              </span> 
+                          </h6> 
+                          <div> 
+                            <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="319">{tasks.filter(i=>i.status === "Completed").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                            <p class="text-muted fs-11 mb-0 lh-1">
+                                <span class="text-danger me-1 fw-semibold">
+                                      <i class="ri-arrow-down-s-line me-1 align-middle"></i>1.16%
+                                </span>
+                                <span>this month</span>
+                            </p>
+                          </div> 
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-top p-4 border-bottom border-block-end-dashed">
+                        <div class="svg-icon-background bg-warning-transparent me-4"> 
+                            <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-warning"><path d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
+                        </div> 
+                        <div class="flex-fill">
+                            <h6 class="mb-2 fs-12">Pending Tasks
+                                <span class="badge bg-warning fw-semibold float-end">
+                                        {tasks.filter(i=>i.status === "Pending").length}
+                                </span> 
+                            </h6> 
                             <div> 
-                              <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="42">{tasks.length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
-                                <p class="text-muted fs-11 mb-0 lh-1">
-                                <span class="text-success me-1 fw-semibold">
-                                    <i class="ri-arrow-up-s-line me-1 align-middle"></i>3.25%
-                                </span>
-                                <span>this month</span>
-                                    </p>
-                                </div> 
-                                </div> 
-                              </div>
-                            </div>
-                                        <div class="p-4 border-bottom border-block-end-dashed d-flex align-items-top">
-                                            <div class="svg-icon-background bg-success-transparent me-4"> 
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-success"><path d="M11.5,20h-6a1,1,0,0,1-1-1V5a1,1,0,0,1,1-1h5V7a3,3,0,0,0,3,3h3v5a1,1,0,0,0,2,0V9s0,0,0-.06a1.31,1.31,0,0,0-.06-.27l0-.09a1.07,1.07,0,0,0-.19-.28h0l-6-6h0a1.07,1.07,0,0,0-.28-.19.29.29,0,0,0-.1,0A1.1,1.1,0,0,0,11.56,2H5.5a3,3,0,0,0-3,3V19a3,3,0,0,0,3,3h6a1,1,0,0,0,0-2Zm1-14.59L15.09,8H13.5a1,1,0,0,1-1-1ZM7.5,14h6a1,1,0,0,0,0-2h-6a1,1,0,0,0,0,2Zm4,2h-4a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Zm-4-6h1a1,1,0,0,0,0-2h-1a1,1,0,0,0,0,2Zm13.71,6.29a1,1,0,0,0-1.42,0l-3.29,3.3-1.29-1.3a1,1,0,0,0-1.42,1.42l2,2a1,1,0,0,0,1.42,0l4-4A1,1,0,0,0,21.21,16.29Z"/></svg>
-                                            </div> 
-                                            <div class="flex-fill">
-                                                <h6 class="mb-2 fs-12">Completed Tasks
-                                                    <span class="badge bg-success fw-semibold float-end">
-                                                    {tasks.filter(i=>i.status === "Completed").length}
-                                                    </span> 
-                                                </h6> 
-                                                <div> 
-                                                    <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="319">{tasks.filter(i=>i.status === "Completed").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
-                                                    <p class="text-muted fs-11 mb-0 lh-1">
-                                                        <span class="text-danger me-1 fw-semibold">
-                                                            <i class="ri-arrow-down-s-line me-1 align-middle"></i>1.16%
-                                                        </span>
-                                                        <span>this month</span>
-                                                    </p>
-                                                </div> 
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-top p-4 border-bottom border-block-end-dashed">
-                                            <div class="svg-icon-background bg-warning-transparent me-4"> 
-                                                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-warning"><path d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
-                                            </div> 
-                                            <div class="flex-fill">
-                                                <h6 class="mb-2 fs-12">Pending Tasks
-                                                    <span class="badge bg-warning fw-semibold float-end">
-                                                    {tasks.filter(i=>i.status === "Pending").length}
-                                                    </span> 
-                                                </h6> 
-                                                <div> 
-                                                    <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="81">{tasks.filter(i=>i.status === "Pending").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
-                                                    <p class="text-muted fs-11 mb-0 lh-1">
-                                                        <span class="text-success me-1 fw-semibold">
-                                                            <i class="ri-arrow-up-s-line me-1 align-middle"></i>0.25%
-                                                        </span>
-                                                        <span>this month</span>
-                                                    </p>
-                                                </div> 
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-top p-4 border-bottom border-block-end-dashed">
-                                            <div class="svg-icon-background bg-secondary-transparent me-4"> 
-                                                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-secondary"><path d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
-                                            </div> 
-                                <div class="flex-fill">
-                                      <h6 class="mb-2 fs-12">Inprogress Tasks
-                                      <span class="badge bg-secondary fw-semibold float-end">
-                                      {tasks.filter(i=>i.status === "In Progress").length}
-                                      </span> 
-                                    </h6> 
-                                <div> 
-                                  
-                                <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="32">{tasks.filter(i=>i.status === "In Progress").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
-                                <p class="text-muted fs-11 mb-0 lh-1">
-                                <span class="text-success me-1 fw-semibFold">
-                                      <i class="ri-arrow-down-s-line me-1 align-middle"></i>0.46%
-                                </span>
-                                <span>this month</span>
+                              <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="81">{tasks.filter(i=>i.status === "Pending").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                              <p class="text-muted fs-11 mb-0 lh-1">
+                                    <span class="text-success me-1 fw-semibold">
+                                        <i class="ri-arrow-up-s-line me-1 align-middle"></i>0.25%
+                                    </span>
+                                    <span>this month</span>
                                 </p>
                             </div> 
                           </div>
                         </div>
-                        <div class="p-4 pb-2">
+                        <div class="d-flex align-items-top p-4 border-bottom border-block-end-dashed">
+                          <div class="svg-icon-background bg-secondary-transparent me-4"> 
+                                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-secondary"><path d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
+                          </div> 
+                          <div class="flex-fill">
+                              <h6 class="mb-2 fs-12">Inprogress Tasks
+                                <span class="badge bg-secondary fw-semibold float-end">
+                                  {tasks.filter(i=>i.status === "In Progress").length}
+                                </span> 
+                              </h6> 
+                              <div>    
+                                <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="32">{tasks.filter(i=>i.status === "In Progress").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                                <p class="text-muted fs-11 mb-0 lh-1">
+                                  <span class="text-success me-1 fw-semibFold">
+                                      <i class="ri-arrow-down-s-line me-1 align-middle"></i>0.46%
+                                  </span>
+                                  <span>this month</span>
+                                </p>
+                            </div> 
+                          </div>
+                      </div>
+                      {/* Tugas Melewati Deadline */}
+                      <div className="p-4 border-bottom border-block-end-dashed d-flex align-items-top">
+                        <div className="svg-icon-background bg-danger-transparent me-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" class="svg-secondary"><path fill="red" d="M19,12h-7V5c0-0.6-0.4-1-1-1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9C20,12.4,19.6,12,19,12z M12,19.9c-3.8,0.6-7.4-2.1-7.9-5.9C3.5,10.2,6.2,6.6,10,6.1V13c0,0.6,0.4,1,1,1h6.9C17.5,17.1,15.1,19.5,12,19.9z M15,2c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1C22,5.1,18.9,2,15,2z M16,8V4.1C18,4.5,19.5,6,19.9,8H16z"/></svg>
+
+                        </div>
+                        <div className="flex-fill">
+                          <h6 className="mb-2 fs-12">Overdue Tasks
+                            <span className="badge bg-danger fw-semibold float-end">
+                              {tasks.filter(task => new Date(task.tanggal_selesai) < new Date().setHours(0, 0, 0, 0)).length              }
+                            </span>
+                          </h6>
+                          <div>
+                            <h4 className="fs-18 fw-semibold mb-2">
+                              <span className="count-up" data-count="0">{tasks.filter(task => new Date(task.tanggal_selesai) < new Date().setHours(0, 0, 0, 0)).length
+                              }</span>
+                              <span className="text-muted float-end fs-11 fw-normal">Overdue</span>
+                            </h4>
+                          </div>
+                        </div>
+                      </div>
+                    <div class="p-4 pb-2">
                           <p class="fs-15 fw-semibold">Tasks Statistics <span class="text-muted fw-normal">(Last 6 months) :</span></p>
                         <div id="task-list-stats"></div>
                     </div>
@@ -592,9 +673,22 @@ const getStatusClass = (status) => {
                                   <p className="mb-0">Tanggal Mulai: <span className="fs-12 mb-1 text-muted">{task.tanggal_mulai}</span></p>
                                   <p className="mb-3">Tanggal Selesai: <span className="fs-12 text-muted">{task.tanggal_selesai}</span></p>
                                 </div>
-                                <div className="btn-list">
-                                  <button className="btn btn-sm btn-icon btn-wave btn-primary-light" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}><i className="ri-edit-line"></i></button>
-                                  <button className="btn btn-sm btn-icon btn-wave btn-danger-light me-0"><i className="ri-delete-bin-line"></i></button>
+                                <div className="dropdown ms-2">
+                                  <button className="btn btn-icon btn-secondary-light btn-sm btn-wave waves-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i className="ti ti-dots-vertical"></i>
+                                  </button>
+                                  <ul className="dropdown-menu">
+                                    <li>
+                                    <button className="dropdown-item" onClick={() => handleViewDetails(task)} data-bs-toggle="modal" data-bs-target="#detailTaskModal">View Details </button>
+                                    </li>
+
+                                    <li>      
+                                      <button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}>Edit Task</button>
+                                    </li>
+                                    <li>      
+                                      <button className="dropdown-item" onClick={() => handleDelete(task.id)}>Delete Task</button>
+                                    </li>
+                                  </ul>
                                 </div>
                               </div>
                               <div className="d-flex justify-content-between align-items-center">
@@ -668,9 +762,21 @@ const getStatusClass = (status) => {
                               <p className="mb-0">Tanggal Mulai: <span className="fs-12 mb-1 text-muted">{task.tanggal_mulai}</span></p>
                               <p className="mb-3">Tanggal Selesai: <span className="fs-12 text-muted">{task.tanggal_selesai}</span></p>
                             </div>
-                            <div class="btn-list">
-                                  <button class="btn btn-sm btn-icon btn-wave btn-primary-light" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}><i class="ri-edit-line"></i></button>
-                                  <button class="btn btn-sm btn-icon btn-wave btn-danger-light me-0"><i class="ri-delete-bin-line"></i></button>
+                            <div className="dropdown ms-2">
+                              <button className="btn btn-icon btn-secondary-light btn-sm btn-wave waves-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i className="ti ti-dots-vertical"></i>
+                              </button>
+                                <ul className="dropdown-menu">
+                                  <li>
+                                    <button className="dropdown-item" onClick={() => handleViewDetails(task)} data-bs-toggle="modal" data-bs-target="#detailTaskModal">View Details </button>
+                                  </li>
+                                  <li>      
+                                     <button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}>Edit Task</button>
+                                  </li>
+                                  <li>      
+                                     <button className="dropdown-item" onClick={() => handleDelete(task.id)}>Delete Task</button>
+                                  </li>
+                                </ul>
                             </div>
                           </div>
                           <div className="d-flex justify-content-between align-items-center">
@@ -686,7 +792,7 @@ const getStatusClass = (status) => {
                                 </div>       
                               </div>
                               <div className="d-flex align-items-center">
-                                <span className="badge bg-secondary">{task.status}</span>
+                                <span className="badge bg-warning">{task.status}</span>
                                 <span className={`badge bg-warning-transparent d-block`}>{task.urgensi}</span>
                               </div>
                             </div>
@@ -746,9 +852,21 @@ const getStatusClass = (status) => {
                               <p className="mb-0">Tanggal Mulai: <span className="fs-12 mb-1 text-muted">{task.tanggal_mulai}</span></p>
                               <p className="mb-3">Tanggal Selesai: <span className="fs-12 text-muted">{task.tanggal_selesai}</span></p>
                             </div>
-                            <div class="btn-list">
-                                  <button class="btn btn-sm btn-icon btn-wave btn-primary-light" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}><i class="ri-edit-line"></i></button>
-                                  <button class="btn btn-sm btn-icon btn-wave btn-danger-light me-0"><i class="ri-delete-bin-line"></i></button>
+                            <div className="dropdown ms-2">
+                              <button className="btn btn-icon btn-secondary-light btn-sm btn-wave waves-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i className="ti ti-dots-vertical"></i>
+                              </button>
+                                <ul className="dropdown-menu">
+                                  <li>
+                                    <button className="dropdown-item" onClick={() => handleViewDetails(task)} data-bs-toggle="modal" data-bs-target="#detailTaskModal">View Details </button>
+                                  </li>
+                                  <li>      
+                                     <button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}>Edit Task</button>
+                                  </li>
+                                  <li>      
+                                     <button className="dropdown-item" onClick={() => handleDelete(task.id)}>Delete Task</button>
+                                  </li>
+                                </ul>
                             </div>
                           </div>
                           <div className="d-flex justify-content-between align-items-center">
@@ -939,6 +1057,17 @@ const getStatusClass = (status) => {
                     />
                   </div>
                   <div className="mb-3">
+                    <label htmlFor="editDeskrpisi" className="form-label">Deskripsi</label>
+                    <textarea
+                      type="text"
+                      className="form-control"
+                      id="editDeskrpisi"
+                      name="deskripsi"
+                      value={editTask.deskripsi}
+                      onChange={(e) => setEditTask({ ...editTask, deskripsi: e.target.value })}
+                    />
+                  </div>
+                  <div className="mb-3">
                     <label htmlFor="editTanggalMulai" className="form-label">Tanggal Mulai</label>
                     <input
                       type="date"
@@ -1017,6 +1146,142 @@ const getStatusClass = (status) => {
           </div>
         </div>
       </div>
+
+      {/* Modal Filter */}
+  <div className="modal fade" id="filterModal" tabIndex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div className="modal-dialog">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title" id="filterModalLabel">Filter Tasks</h5>
+          <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div className="modal-body">
+          <form>
+            <div className="mb-3">
+              <label className="form-label">Status</label>
+              <select className="form-select">
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Urgensi</label>
+              <select className="form-select">
+                <option value="">All</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            {/* Filter by Assigned User */}
+            <div className="mb-3">
+                <label className="form-label">Ditugaskan Ke</label>
+                <select
+                  className="form-select"
+                  value={assignedToFilter}
+                  onChange={(e) => setAssignedToFilter(e.target.value)}
+                >
+                  <option value="">All</option>
+                  {assignedUsers.map((user) => (
+                    <option key={user.ulid} value={user.ulid}>
+                      {user.first_name} {user.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+          </form>
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Clear</button>
+          <button type="button" className="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Modal View Details */}
+  <div className="modal fade" id="detailTaskModal" tabIndex="-1" aria-labelledby="detailTaskModalLabel" aria-hidden="true">
+    <div className="modal-dialog">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title" id="detailTaskModalLabel">Detail Task</h5>
+          <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        <div className="modal-body">
+          {selectedTask ? (
+            <>
+            <div className="task-details-card">
+                <h2 className="task-title">{selectedTask.judul}</h2>
+
+                <div className="task-giver">
+                    <strong>Pemberi Tugas</strong>
+                    <div className="circle-name">
+                      {selectedTask.pemberi_tugas_object?.first_name.charAt(0)}
+                    </div>
+                    <p>{selectedTask.pemberi_tugas_object?.first_name} {selectedTask.pemberi_tugas_object?.last_name}</p>
+                </div>
+
+                <div className="task-info">
+                  <p><strong>Deskripsi</strong></p>
+                  <p className="task-description">{selectedTask.deskripsi}</p>
+                </div>
+
+                <div className="task-giver">
+                    <strong>Ditugaskan Ke</strong>
+                    <div className="circle-name2" >
+                      {selectedTask.ditugaskan_ke_object?.first_name.charAt(0)}
+                    </div>
+                    <p>{selectedTask.ditugaskan_ke_object?.first_name} {selectedTask.ditugaskan_ke_object?.last_name}</p>
+                  </div>
+
+                <div className="task-dates">
+                  <div className="task-date">
+                    <span><strong>Tanggal Mulai</strong></span>
+                    <span>{selectedTask.tanggal_mulai}</span>
+                  </div>
+                  <div className="task-date">
+                    <span><strong>Tanggal Selesai</strong></span>
+                    <span>{selectedTask.tanggal_selesai}</span>
+                  </div>
+                </div>
+                <div className="task-meta">
+                  <div className="task-status">
+                    <strong>Status</strong>
+                    <span 
+                      style={{ marginLeft: '10px' }} 
+                      className={`status-badge ${selectedTask.status.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      {selectedTask.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="task-meta">
+                  <div className="task-urgency" style={{ marginRight: '20px' }}>
+                    <strong>Urgensi</strong>
+                    <span style={{ marginLeft: '10px' }} className={`urgency-badge ${selectedTask.urgensi.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {selectedTask.urgensi}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+
+              {/* Tambahkan detail lain yang ingin Anda tampilkan */}
+            </>
+          ) : (
+            <p>Loading task details...</p>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>      
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
     
   );
