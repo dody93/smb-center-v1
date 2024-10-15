@@ -24,6 +24,7 @@ const FilterSection = ({
             onClick={(e) => e.target.showPicker()} 
             className="form-control"
           />
+          
         </div>
       </div>
       <div className="filter-item">
@@ -61,7 +62,7 @@ const FilterSection = ({
   );
 };
 
-const AbsensiList = () => {
+const AbsensiOfficeList = () => {
   const [date, setDate] = useState('');
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -106,7 +107,7 @@ const AbsensiList = () => {
     try {
       // Menggunakan date yang sekarang berupa format bulan (YYYY-MM)
       const response = await axios.get(
-        `/v1/report/absensi/summary/${date}-01?location=${selectedLocation}`,
+        `/v1/report/absensi-office/summary/${date}-01?location=${selectedLocation}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -135,7 +136,7 @@ const AbsensiList = () => {
     fetchAbsenData();
   }, [date, selectedLocation, fetchAbsenData]);
 
-  
+
 
   const filteredAbsenData = absenData.filter((data) => {
     if (category === 'all') return true;
@@ -212,15 +213,13 @@ const AbsensiList = () => {
                 <thead className="table-primary">
                   <tr>
                     <th>Nama Karyawan</th>
-                    <th>Posisi</th>
-                    <th>Opening</th>
-                    <th>Middle</th>
-                    <th>Closing</th>
-                    <th>Jumlah Shift C9</th>
-                    <th>Jumlah Shift C6</th>
-                    <th>Day Off</th>
+                    <th>Posisi Code</th>
+                    <th>Masuk</th>
+                    <th>Izin</th>
+                    <th>Sakit</th>
+                    <th>Cuti</th>
+                    <th>Absen</th>
                     <th>Keterlambatan</th>
-                    
                   </tr>
                 </thead>
                 <tbody>
@@ -237,14 +236,12 @@ const AbsensiList = () => {
                       <tr key={index}>
                         <td>{data.name || 'Nama tidak tersedia'}</td>
                         <td>{data.posisi_code || 0}</td>
-                        <td>{data.opening || 0}</td>
-                        <td>{data.middle || 0}</td>
-                        <td>{data.closing || 0}</td>
-                        <td>{data.c9 || 0}</td>
-                        <td>{data.c6 || 0}</td>
-                        <td>{data.day_off || 0}</td>
+                        <td>{data.masuk || 0}</td>
+                        <td>{data.izin || 0}</td>
+                        <td>{data.sakit || 0}</td>
+                        <td>{data.cuti || 0}</td>
+                        <td>{data.absen || 0}</td>
                         <td>{data.terlambat || 0}</td>
-                      
                       </tr>
                     ))
                   ) : (
@@ -319,7 +316,7 @@ const AbsensiList = () => {
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            
+          
             </div>
           </div>
         </div>
@@ -328,4 +325,4 @@ const AbsensiList = () => {
   );
 };
 
-export default AbsensiList;
+export default AbsensiOfficeList;

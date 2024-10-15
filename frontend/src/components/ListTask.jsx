@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo  } from 'react';
 import '../styles/custome.css';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Import styling
+
+
 //import Logo from '../Logo.png'; // Pastikan pathnya benar
 
 const ListTask = () => {
@@ -26,6 +30,13 @@ const ListTask = () => {
   const [assignedToFilter, setAssignedToFilter] = useState('');
   const [selectedTask, setSelectedTask] = useState(null); // State untuk menyimpan task yang dipilih
 
+    // Handle perubahan pada rich text editor
+    const handleQuillChange = (value) => {
+      setNewTask((prevTask) => ({
+        ...prevTask,
+        deskripsi: value, // Update deskripsi with the formatted content
+      }));
+    };
 
 
   const handleViewDetails = (task) => {
@@ -243,12 +254,6 @@ const ListTask = () => {
   };
   
   
-  
-
-  
-  
-  
-  
  
 
   const pendingTasks = filteredTasks.filter(task => {
@@ -430,20 +435,24 @@ const getStatusClass = (status) => {
                   </div>
                 </div>
                 <div className="table-responsive">
-                  <table className="table table-bordered text-nowrap w-100">
-                    <thead>
+                  <table className="table text-nowrap">
+                    <thead class="table-primary">
                       <tr>
-                        <th style={{ width: '10%' }}>Task ID</th>
-                        <th style={{ width: '20%' }}>Judul Task</th>
-                        <th style={{ width: '20%' }}>Tanggal Mulai</th>
-                        <th style={{ width: '20%' }}>Tanggal Selesai</th>
-                        <th style={{ width: '10%' }}>Status</th>
-                        <th style={{ width: '20%' }}>Ditugaskan Ke</th>
+                        <th scope="col" style={{ width: '10%' }}>Task ID</th>
+                        <th scope="col" style={{ width: '20%' }}>Judul Task</th>
+                        <th scope="col" style={{ width: '20%' }}>Tanggal Mulai</th>
+                        <th scope="col" style={{ width: '20%' }}>Tanggal Selesai</th>
+                        <th scope="col" style={{ width: '10%' }}>Status</th>
+                        <th scope="col" style={{ width: '20%' }}>Ditugaskan Ke</th>
+                        <th scope="col" style={{ width: '10%' }}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filtereTasks.length > 0 ? (
-                        filtereTasks.map((task) => {
+                        filtereTasks
+                        .filter(task =>
+                          task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid
+                        ).map((task) => {
                           const { first_name, last_name } = task.ditugaskan_ke_object;
                           const initials = `${first_name?.charAt(0) || ''}${last_name?.charAt(0) || ''}`;
                           const fullName = `${first_name || ''} ${last_name || ''}`;
@@ -466,6 +475,15 @@ const getStatusClass = (status) => {
                                   {initials}
                                   <div className="tooltip">{fullName}</div>
                                 </div>
+                              </td>
+                              <td>
+                                {/* Ikon Edit dan Delete */}
+                                <button className="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#editTaskModal" onClick={() => handleEditClick(task)}>
+                                  <i className="bi bi-pencil"></i> {/* Ganti dengan ikon edit yang Anda inginkan */}
+                                </button>
+                                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(task.id)}>
+                                  <i className="bi bi-trash"></i> {/* Ganti dengan ikon delete yang Anda inginkan */}
+                                </button>
                               </td>
                             </tr>
                           );
@@ -523,12 +541,14 @@ const getStatusClass = (status) => {
                     <div class="flex-fill">
                         <h6 class="mb-2 fs-12">All Tasks
                           <span class="badge bg-primary fw-semibold float-end">
-                                    {tasks.length}
+                          
+                          {tasks.filter(task => task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid).length}
+
                           </span> 
                         </h6> 
                         <div class="pb-0 mt-0"> 
                           <div> 
-                            <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="42">{tasks.length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                            <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="42">{tasks.filter(task => task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid).length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
                             <p class="text-muted fs-11 mb-0 lh-1">
                               <span class="text-success me-1 fw-semibold">
                                   <i class="ri-arrow-up-s-line me-1 align-middle"></i>3.25%
@@ -546,11 +566,11 @@ const getStatusClass = (status) => {
                       <div class="flex-fill">
                           <h6 class="mb-2 fs-12">Completed Tasks
                              <span class="badge bg-success fw-semibold float-end">
-                                  {tasks.filter(i=>i.status === "Completed").length}
+                             {tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && task.status === "Completed").length}
                               </span> 
                           </h6> 
                           <div> 
-                            <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="319">{tasks.filter(i=>i.status === "Completed").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                            <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="319">{tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && task.status === "Completed").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
                             <p class="text-muted fs-11 mb-0 lh-1">
                                 <span class="text-danger me-1 fw-semibold">
                                       <i class="ri-arrow-down-s-line me-1 align-middle"></i>1.16%
@@ -567,11 +587,11 @@ const getStatusClass = (status) => {
                         <div class="flex-fill">
                             <h6 class="mb-2 fs-12">Pending Tasks
                                 <span class="badge bg-warning fw-semibold float-end">
-                                        {tasks.filter(i=>i.status === "Pending").length}
+                                {tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && task.status === "Pending").length}
                                 </span> 
                             </h6> 
                             <div> 
-                              <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="81">{tasks.filter(i=>i.status === "Pending").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                              <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="81">{tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && task.status === "Pending").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
                               <p class="text-muted fs-11 mb-0 lh-1">
                                     <span class="text-success me-1 fw-semibold">
                                         <i class="ri-arrow-up-s-line me-1 align-middle"></i>0.25%
@@ -588,11 +608,11 @@ const getStatusClass = (status) => {
                           <div class="flex-fill">
                               <h6 class="mb-2 fs-12">Inprogress Tasks
                                 <span class="badge bg-secondary fw-semibold float-end">
-                                  {tasks.filter(i=>i.status === "In Progress").length}
+                                {tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && task.status === "In Progress").length}
                                 </span> 
                               </h6> 
                               <div>    
-                                <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="32">{tasks.filter(i=>i.status === "In Progress").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
+                                <h4 class="fs-18 fw-semibold mb-2"><span class="count-up" data-count="32">{tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && task.status === "In Progress").length}</span><span class="text-muted float-end fs-11 fw-normal">Last Year</span></h4> 
                                 <p class="text-muted fs-11 mb-0 lh-1">
                                   <span class="text-success me-1 fw-semibFold">
                                       <i class="ri-arrow-down-s-line me-1 align-middle"></i>0.46%
@@ -611,13 +631,13 @@ const getStatusClass = (status) => {
                         <div className="flex-fill">
                           <h6 className="mb-2 fs-12">Overdue Tasks
                             <span className="badge bg-danger fw-semibold float-end">
-                              {tasks.filter(task => new Date(task.tanggal_selesai) < new Date().setHours(0, 0, 0, 0)).length              }
+                            {tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && new Date(task.tanggal_selesai) < new Date().setHours(0, 0, 0, 0)).length}
+
                             </span>
                           </h6>
                           <div>
                             <h4 className="fs-18 fw-semibold mb-2">
-                              <span className="count-up" data-count="0">{tasks.filter(task => new Date(task.tanggal_selesai) < new Date().setHours(0, 0, 0, 0)).length
-                              }</span>
+                              <span className="count-up" data-count="0">{tasks.filter(task => (task.ditugaskan_ke === user.ulid || task.pemberi_tugas === user.ulid) && new Date(task.tanggal_selesai) < new Date().setHours(0, 0, 0, 0)).length}</span>
                               <span className="text-muted float-end fs-11 fw-normal">Overdue</span>
                             </h4>
                           </div>
@@ -910,7 +930,7 @@ const getStatusClass = (status) => {
         aria-labelledby="createTaskModalLabel"
         aria-hidden="true"
       >
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="createTaskModalLabel">Create Task</h5>
@@ -921,7 +941,7 @@ const getStatusClass = (status) => {
                 aria-label="Close"
               ></button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ maxHeight: '500px', overflowY: 'auto' }}>
               <div className="mb-3">
                 <label htmlFor="judul" className="form-label">Judul</label>
                 <input
@@ -933,17 +953,28 @@ const getStatusClass = (status) => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="mb-3">
-                <label htmlFor="deskripsi" className="form-label">Deskripsi</label>
-                <textarea
-                  type="text"
-                  className="form-control"
-                  id="deskripsi"
-                  name="deskripsi"
+              <div className="form-group">
+                <label>Deskripsi</label>
+                <ReactQuill
                   value={newTask.deskripsi}
-                  onChange={handleInputChange}
+                  onChange={handleQuillChange}
+                  modules={{
+                    toolbar: [
+                      [{ 'header': [1, 2, false] }],
+                      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                      [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                      ['link', 'image'], // Tambahkan ini untuk mendukung gambar
+                      ['clean'] // Hapus format
+                    ],
+                  }}
+                  formats={[
+                    'header', 'bold', 'italic', 'underline', 'strike', 'blockquote',
+                    'list', 'bullet', 'indent', 'link', 'image'
+                  ]}
+                  placeholder="Tulis deskripsi dengan format..."
                 />
               </div>
+
               <div className="mb-3">
                 <label htmlFor="tanggal_mulai" className="form-label">Tanggal Mulai</label>
                 <input
@@ -1056,17 +1087,29 @@ const getStatusClass = (status) => {
                       onChange={(e) => setEditTask({ ...editTask, judul: e.target.value })}
                     />
                   </div>
-                  <div className="mb-3">
-                    <label htmlFor="editDeskrpisi" className="form-label">Deskripsi</label>
-                    <textarea
-                      type="text"
-                      className="form-control"
-                      id="editDeskrpisi"
-                      name="deskripsi"
+                  <div className="form-group">
+                    <label>Deskripsi</label>
+                    <ReactQuill
                       value={editTask.deskripsi}
                       onChange={(e) => setEditTask({ ...editTask, deskripsi: e.target.value })}
+                      modules={{
+                        toolbar: [
+                          [{ 'header': [1, 2, false] }],
+                          ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                          [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                          ['link', 'image'], // Mendukung gambar
+                          ['clean'], // Hapus format
+                        ],
+                      }}
+                      formats={[
+                        'header', 'bold', 'italic', 'underline', 'strike', 'blockquote',
+                        'list', 'bullet', 'indent', 'link', 'image'
+                      ]}
+                      placeholder="Edit deskripsi tugas..."
                     />
+                    {editTask.deskripsi === '' && <div className="text-danger">Deskripsi tidak boleh kosong</div>}
                   </div>
+
                   <div className="mb-3">
                     <label htmlFor="editTanggalMulai" className="form-label">Tanggal Mulai</label>
                     <input
@@ -1223,11 +1266,14 @@ const getStatusClass = (status) => {
                     <p>{selectedTask.pemberi_tugas_object?.first_name} {selectedTask.pemberi_tugas_object?.last_name}</p>
                 </div>
 
-                <div className="task-info">
-                  <p><strong>Deskripsi</strong></p>
-                  <p className="task-description">{selectedTask.deskripsi}</p>
+                <div className="mb-3">
+                  <label htmlFor="editDeskrpisi" className="form-label">Deskripsi</label>
+                  <div
+                    className="form-control"
+                    style={{ whiteSpace: 'pre-wrap', padding: '10px', lineHeight: '1.5' }}
+                    dangerouslySetInnerHTML={{ __html: selectedTask.deskripsi }}
+                  />
                 </div>
-
                 <div className="task-giver">
                     <strong>Ditugaskan Ke</strong>
                     <div className="circle-name2" >

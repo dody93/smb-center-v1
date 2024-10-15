@@ -35,11 +35,9 @@ const Navbar = () => {
     navigate('/');
   };
 
-  
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
-  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -53,7 +51,6 @@ const Navbar = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
 
   return (
     <header className="app-header">
@@ -61,9 +58,10 @@ const Navbar = () => {
         <div className="header-content-left">
           <div className="header-element">
             <button
-             aria-label="Hide Sidebar"
-             className="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle" data-bs-toggle="sidebar"
-             onClick={() => document.body.classList.toggle('sidebar-open')}
+              aria-label="Hide Sidebar"
+              className="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle"
+              data-bs-toggle="sidebar"
+              onClick={() => document.body.classList.toggle('sidebar-open')}
             >
               <span></span>
             </button>
@@ -79,7 +77,7 @@ const Navbar = () => {
             <div className="d-flex align-items-center">
               <div className="me-sm-2 me-0">
                 <img
-                  src={user?.photo || Logo} // Gunakan foto pengguna jika ada, atau logo default
+                  src={user?.photo || Logo}
                   alt="Profile"
                   width="32"
                   height="32"
@@ -88,31 +86,30 @@ const Navbar = () => {
               </div>
               <div className="d-sm-block d-none">
                 <p className="fw-semibold mb-0 lh-1">{user?.first_name || 'Loading...'}</p>
-                
               </div>
             </div>
           </button>
           <ul
-            className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
+            className={`custom-dropdown-menu ${dropdownOpen ? 'show' : ''}`}
             aria-labelledby="mainHeaderProfile"
           >
             <li>
-              <Link className="dropdown-item d-flex" to="/profile">
+              <Link className="custom-dropdown-item d-flex" to="/profile">
                 <i className="ti ti-user-circle fs-18 me-2 op-7"></i>Profile
               </Link>
             </li>
             <li>
-              <Link className="dropdown-item d-flex border-block-end" to="/to-do-list">
+              <Link className="custom-dropdown-item d-flex border-block-end" to="/to-do-list">
                 <i className="ri-briefcase-line fs-18 me-2 op-7"></i>Ganti Jabatan
               </Link>
             </li>
             <li>
-              <Link className="dropdown-item d-flex" to="/chat">
+              <Link className="custom-dropdown-item d-flex" to="/chat">
                 <i className="ti ti-headset fs-18 me-2 op-7"></i>Support
               </Link>
             </li>
             <li>
-              <button onClick={handleLogout} className="dropdown-item d-flex">
+              <button onClick={handleLogout} className="custom-dropdown-item d-flex">
                 <i className="ti ti-logout fs-18 me-2 op-7"></i>Log Out
               </button>
             </li>

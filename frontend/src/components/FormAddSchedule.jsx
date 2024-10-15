@@ -8,34 +8,11 @@ const FormAddSchedule = () => {
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
   const [scheduleData, setScheduleData] = useState(null);
+  const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState({});
 
-  const [selectedUsers, setSelectedUsers] = useState({
-    'Minggu-Opening': [],
-    'Senin-Opening': [],
-    'Selasa-Opening': [],
-    'Rabu-Opening': [],
-    'Kamis-Opening': [],
-    'Jumat-Opening': [],
-    'Sabtu-Opening': [],
-    'Minggu-Middle': [],
-    'Senin-Middle': [],
-    'Selasa-Middle': [],
-    'Rabu-Middle': [],
-    'Kamis-Middle': [],
-    'Jumat-Middle': [],
-    'Sabtu-Middle': [],
-    'Minggu-Closing': [],
-    'Senin-Closing': [],
-    'Selasa-Closing': [],
-    'Rabu-Closing': [],
-    'Kamis-Closing': [],
-    'Jumat-Closing': [],
-    'Sabtu-Closing': []
-  });
-
-  // Fetch locations when component mounts
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -45,31 +22,33 @@ const FormAddSchedule = () => {
         setError('Gagal mengambil lokasi.');
       }
     };
-
     fetchLocations();
   }, []);
 
-  // Fetch users for the multiple selection
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('/v1/select/user');
-        setUsers(response.data);
+        setUsers(response.data); // Pastikan posisi_code juga ikut diambil
       } catch (err) {
         setError('Gagal mengambil daftar user.');
       }
     };
-
     fetchUsers();
   }, []);
 
-  // Convert user data for react-select
-  const userOptions = users.map(user => ({
-    value: user.ulid,
-    label: `${user.first_name} ${user.last_name || ''}\n${user.email}`
-  }));
+  useEffect(() => {
+    const fetchShifts = async () => {
+      try {
+        const response = await axios.get('/v1/jadwal-shift');
+        setShifts(response.data);
+      } catch (err) {
+        setError('Gagal mengambil daftar shift.');
+      }
+    };
+    fetchShifts();
+  }, []);
 
-  // Fetch schedule based on selected location and date
   useEffect(() => {
     if (location && date) {
       setLoading(true);
@@ -79,51 +58,23 @@ const FormAddSchedule = () => {
         try {
           const response = await axios.get(`/v1/jadwal/${location}/${date}`);
           setScheduleData(response.data);
-          
-          const getUser = (userUlid) =>  {
-            const u = users.find(u=>u.ulid === userUlid)
-            return {value: u.ulid,
-                label: `${u.first_name} ${u.last_name || ''}\n${u.email}`}
-        }
 
-        setSelectedUsers(prevState => ({
-            ...prevState,
-            // Minggu
-            'Minggu-Opening': response.data.minggu_opening.map(userUlid => getUser(userUlid)),
-            'Minggu-Middle': response.data.minggu_middle.map(userUlid => getUser(userUlid)),
-            'Minggu-Closing': response.data.minggu_closing.map(userUlid => getUser(userUlid)),
-            
-            // Senin
-            'Senin-Opening': response.data.senin_opening.map(userUlid => getUser(userUlid)),
-            'Senin-Middle': response.data.senin_middle.map(userUlid => getUser(userUlid)),
-            'Senin-Closing': response.data.senin_closing.map(userUlid => getUser(userUlid)),
-          
-            // Selasa
-            'Selasa-Opening': response.data.selasa_opening.map(userUlid => getUser(userUlid)),
-            'Selasa-Middle': response.data.selasa_middle.map(userUlid => getUser(userUlid)),
-            'Selasa-Closing': response.data.selasa_closing.map(userUlid => getUser(userUlid)),
-          
-            // Rabu
-            'Rabu-Opening': response.data.rabu_opening.map(userUlid => getUser(userUlid)),
-            'Rabu-Middle': response.data.rabu_middle.map(userUlid => getUser(userUlid)),
-            'Rabu-Closing': response.data.rabu_closing.map(userUlid => getUser(userUlid)),
-          
-            // Kamis
-            'Kamis-Opening': response.data.kamis_opening.map(userUlid => getUser(userUlid)),
-            'Kamis-Middle': response.data.kamis_middle.map(userUlid => getUser(userUlid)),
-            'Kamis-Closing': response.data.kamis_closing.map(userUlid => getUser(userUlid)),
-          
-            // Jumat
-            'Jumat-Opening': response.data.jumat_opening.map(userUlid => getUser(userUlid)),
-            'Jumat-Middle': response.data.jumat_middle.map(userUlid => getUser(userUlid)),
-            'Jumat-Closing': response.data.jumat_closing.map(userUlid => getUser(userUlid)),
-          
-            // Sabtu
-            'Sabtu-Opening': response.data.sabtu_opening.map(userUlid => getUser(userUlid)),
-            'Sabtu-Middle': response.data.sabtu_middle.map(userUlid => getUser(userUlid)),
-            'Sabtu-Closing': response.data.sabtu_closing.map(userUlid => getUser(userUlid)),
-          }));
-          
+          const getUser = (userUlid) => {
+            const user = users.find(u => u.ulid === userUlid);
+            return {
+              value: user.ulid,
+              label: user.first_name, // Tampilkan hanya nama di input
+              posisi_code: user.posisi_code // Sertakan posisi_code
+            };
+          };
+
+          const updatedUsers = {};
+          shifts.forEach(shift => {
+            ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].forEach(day => {
+              updatedUsers[`${day}-${shift.slug}`] = response.data[`${day.toLowerCase()}_${shift.slug}`]?.map(userUlid => getUser(userUlid)) || [];
+            });
+          });
+          setSelectedUsers(updatedUsers);
 
         } catch (err) {
           setError('Terjadi kesalahan saat mengambil data jadwal.');
@@ -131,54 +82,39 @@ const FormAddSchedule = () => {
           setLoading(false);
         }
       };
-
       fetchSchedule();
     }
-  }, [location, date,users]);
+  }, [location, date, users, shifts]);
 
-  // Function to handle user selection change
   const handleAssignChange = (selectedOptions, { name }) => {
-    console.log(selectedUsers)
+    const updatedSelection = selectedOptions?.map(option => ({
+      value: option.value,
+      label: option.label,
+      posisi_code: option.posisi_code // Simpan posisi_code saat perubahan
+    })) || [];
+
     setSelectedUsers(prevState => ({
       ...prevState,
-      [name]: selectedOptions
+      [name]: updatedSelection
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Siapkan payload yang sesuai dengan format backend
     const payload = {
       start: date,
       location_ulid: location,
-      minggu_opening: selectedUsers['Minggu-Opening'].map(user => user.value),
-      minggu_middle: selectedUsers['Minggu-Middle'].map(user => user.value),
-      minggu_closing: selectedUsers['Minggu-Closing'].map(user => user.value),
-      senin_opening: selectedUsers['Senin-Opening'].map(user => user.value),
-      senin_middle: selectedUsers['Senin-Middle'].map(user => user.value),
-      senin_closing: selectedUsers['Senin-Closing'].map(user => user.value),
-      selasa_opening: selectedUsers['Selasa-Opening'].map(user => user.value),
-      selasa_middle: selectedUsers['Selasa-Middle'].map(user => user.value),
-      selasa_closing: selectedUsers['Selasa-Closing'].map(user => user.value),
-      rabu_opening: selectedUsers['Rabu-Opening'].map(user => user.value),
-      rabu_middle: selectedUsers['Rabu-Middle'].map(user => user.value),
-      rabu_closing: selectedUsers['Rabu-Closing'].map(user => user.value),
-      kamis_opening: selectedUsers['Kamis-Opening'].map(user => user.value),
-      kamis_middle: selectedUsers['Kamis-Middle'].map(user => user.value),
-      kamis_closing: selectedUsers['Kamis-Closing'].map(user => user.value),
-      jumat_opening: selectedUsers['Jumat-Opening'].map(user => user.value),
-      jumat_middle: selectedUsers['Jumat-Middle'].map(user => user.value),
-      jumat_closing: selectedUsers['Jumat-Closing'].map(user => user.value),
-      sabtu_opening: selectedUsers['Sabtu-Opening'].map(user => user.value),
-      sabtu_middle: selectedUsers['Sabtu-Middle'].map(user => user.value),
-      sabtu_closing: selectedUsers['Sabtu-Closing'].map(user => user.value)
     };
 
-    try {
-      // Kirim data menggunakan POST ke endpoint yang benar
-      const response = await axios.post(`/v1/jadwal/${location}/${date}`, payload);
+    shifts.forEach(shift => {
+      ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].forEach(day => {
+        payload[`${day.toLowerCase()}_${shift.slug}`] = selectedUsers[`${day}-${shift.slug}`]?.map(user => user.value) || [];
+      });
+    });
 
+    try {
+      const response = await axios.post(`/v1/jadwal/${location}/${date}`, payload);
       if (response.status === 200) {
         alert('Jadwal berhasil disimpan');
       } else {
@@ -190,6 +126,51 @@ const FormAddSchedule = () => {
     }
   };
 
+  const userOptions = users.map(user => ({
+    value: user.ulid,
+    label: `${user.first_name} ${user.last_name || ''}`, // Tampilkan nama dan email di dropdown
+    posisi_code: user.posisi_code // Sertakan posisi_code untuk styling
+  }));
+
+  // Custom styles for react-select based on posisi_code
+  const customStyles = {
+    multiValue: (styles, { data }) => {
+      let backgroundColor;
+      switch (data.posisi_code) {
+        case 'FT':
+          backgroundColor = '#23B7E5'; // Biru untuk FT
+          break;
+        case 'PT':
+          backgroundColor = '#8CC63F'; // Hijau untuk PT
+          break;
+        case 'HB':
+          backgroundColor = '#F3A712'; // Orange untuk HB
+          break;
+        case 'DIR':
+          backgroundColor = '#ff4507'; // Kuning untuk DIR
+          break;
+        default:
+          backgroundColor = '#6c757d'; // Warna default (abu-abu)
+      }
+      return {
+        ...styles,
+        backgroundColor,
+        color: 'white' // Warna teks putih untuk kontras
+      };
+    },
+    multiValueLabel: (styles) => ({
+      ...styles,
+      color: 'white' // Teks tetap putih
+    }),
+    multiValueRemove: (styles) => ({
+      ...styles,
+      color: 'white',
+      ':hover': {
+        backgroundColor: '#0056b3',
+        color: 'white'
+      }
+    })
+  };
 
   return (
     <div>
@@ -219,7 +200,7 @@ const FormAddSchedule = () => {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                onFocus={(e) => e.target.showPicker()}
+                onClick={(e) => e.target.showPicker()} // Pastikan ini dipanggil dari onClick
                 className="form-control"
               />
             </div>
@@ -244,21 +225,20 @@ const FormAddSchedule = () => {
               </tr>
             </thead>
             <tbody>
-              {/* Contoh shift */}
-              {['Opening', 'Middle', 'Closing'].map((shift) => (
-                <tr key={shift}>
-                  <td>{shift} 07:00 - 16:00</td>
-                  {['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map((day) => (
+              {shifts.map(shift => (
+                <tr key={shift.slug}>
+                  <td>{shift.name} </td>
+                  {['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(day => (
                     <td key={day}>
-                      {/* React-Select dropdown untuk memilih user */}
                       <Select
                         isMulti
-                        name={`${day}-${shift}`}
+                        name={`${day}-${shift.slug}`}
                         options={userOptions}
                         className="basic-multi-select"
                         classNamePrefix="select"
-                        value={selectedUsers[`${day}-${shift}`]}
+                        value={selectedUsers[`${day}-${shift.slug}`]}
                         onChange={handleAssignChange}
+                        styles={customStyles} // Apply custom styles
                       />
                     </td>
                   ))}
@@ -267,13 +247,56 @@ const FormAddSchedule = () => {
             </tbody>
           </table>
         )}
-       {/* Tampilkan tombol submit hanya jika lokasi dan tanggal sudah dipilih */}
-      {location && date && (
-        <button onClick={handleSubmit} className="btn btn-primary mt-3">
-          Submit Jadwal
-        </button>
-      )}
-    </div>
+
+          {location && date && (
+          <button onClick={handleSubmit} className="btn btn-primary mt-3">
+            Submit Jadwal
+          </button>
+        )}
+      </div>
+      {/* Tambahkan keterangan warna di sini */}
+      <div className="legend mt-4">
+        <h5>Keterangan:</h5>
+        <div className="d-flex flex-wrap">
+          <div className="legend-item mr-3">
+            <span className="legend-color" style={{ backgroundColor: '#23B7E5' }}></span>
+            FT (Full-time)
+          </div>
+          <div className="legend-item mr-3">
+            <span className="legend-color" style={{ backgroundColor: '#8CC63F' }}></span>
+            PT (Part-time)
+          </div>
+          <div className="legend-item mr-3">
+            <span className="legend-color" style={{ backgroundColor: '#F3A712' }}></span>
+            HB (Honorer/Bebas)
+          </div>
+          <div className="legend-item mr-3">
+            <span className="legend-color" style={{ backgroundColor: '#ff4507' }}></span>
+            DIR (Direktur)
+          </div>
+        </div>
+      </div>
+
+
+
+       {/* CSS Inline untuk styling keterangan */}
+    <style jsx>{`
+      .legend {
+        margin-top: 20px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .legend-color {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        border-radius: 3px;
+      }
+    `}</style>
     </div>
   );
 };

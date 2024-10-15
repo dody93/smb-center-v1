@@ -1,0 +1,173 @@
+.shift-table-horizontal {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+}
+
+.shift-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+/* Navigasi Bulan */
+.month-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.month-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+.month-button:hover {
+  background-color: #45a049;
+}
+
+.current-month {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.shift-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  margin-bottom: 40px;
+}
+
+.shift-table th, .shift-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.shift-table th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Shift Karyawan */
+.shift-cell.O {
+  background-color: #4CAF50; /* Hijau untuk Opening */
+  color: white;
+}
+
+.shift-cell.M {
+  background-color: #ffeb3b; /* Kuning untuk Middle */
+  color: black;
+}
+
+.shift-cell.C {
+  background-color: #f44336; /* Merah untuk Closing */
+  color: white;
+}
+
+/* Summary Table */
+.summary-title {
+  font-size: 1.5em;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.summary-table th, .summary-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.summary-table th {
+  background-color: #2196F3;
+  color: white;
+}
+
+/* Dropdown Pilihan Lokasi */
+.location-select-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#location-select {
+  padding: 8px;
+  margin-left: 10px;
+}
+
+/* Error Handling */
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+/* Tombol Download */
+.download-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.download-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.download-button:hover {
+  background-color: #45a049;
+}
+
+/* AbsensiList.css */
+
+.filter-container {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-icon {
+  font-size: 20px;
+  color: #606060;
+}
+
+.filter-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-input,
+.filter-select {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.filter-select {
+  background-color: #fff;
+}

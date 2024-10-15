@@ -9,8 +9,10 @@ import BusinessSectorSelection from "./components/BusinessSectorSelection";
 import PrivateRoute from "./components/PrivateRoute";
 import Users from "./pages/Users";
 import Employee from "./pages/Employee";
+import ShiftTableList from "./pages/ShiftTableList";
 import Shift from "./pages/Shift";
 import Absen from "./pages/Absen";
+import AbsensiOffice from "./pages/AbsensiOffice";
 import Task from "./pages/Task";
 import AddEmployee from "./pages/AddEmployee";
 import AddSchedule from "./pages/AddSchedule";
@@ -20,6 +22,7 @@ import AddUser from "./pages/AddUser";
 import EditUser from "./pages/EditUser";
 import AddProduct from "./pages/AddProduct";
 import EditProduct from "./pages/EditProduct";
+
 
 
 
@@ -38,9 +41,11 @@ function App() {
             <Route path="/employee" element={<PrivateRoute element={<Employee />} />} />
             <Route path="/shift" element={<PrivateRoute element={<Shift />} />} />
             <Route path="/absen" element={<PrivateRoute element={<Absen />} />} />
+            <Route path="/absen-office" element={<PrivateRoute element={<AbsensiOffice />} />} />
             <Route path="/listtask" element={<PrivateRoute element={<Task />} />} />
             <Route path="/addemployee" element={<PrivateRoute element={<AddEmployee />} />} />
             <Route path="/addschedule" element={<PrivateRoute element={<AddSchedule />} />} />
+             <Route path="/ShiftTableList" element={<PrivateRoute element={<ShiftTableList />} />} />
             <Route path="/users" element={<PrivateRoute element={<Users />} />} />
             <Route path="/users/add" element={<PrivateRoute element={<AddUser />} />} />
             <Route path="/users/edit/:id" element={<PrivateRoute element={<EditUser />} />} />
