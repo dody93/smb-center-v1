@@ -137,10 +137,10 @@ const FormAddSchedule = () => {
     multiValue: (styles, { data }) => {
       let backgroundColor;
       switch (data.posisi_code) {
-        case 'FT':
+        case 'PT':
           backgroundColor = '#23B7E5'; // Biru untuk FT
           break;
-        case 'PT':
+        case 'FT':
           backgroundColor = '#8CC63F'; // Hijau untuk PT
           break;
         case 'HB':
@@ -227,7 +227,10 @@ const FormAddSchedule = () => {
             <tbody>
               {shifts.map(shift => (
                 <tr key={shift.slug}>
-                  <td>{shift.name} </td>
+                  <td>
+                  <div>{shift.name}</div>
+                  <div style={{ fontSize: '0.9em', color: '#666' }}>{shift.description}</div>  
+                  </td>
                   {['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(day => (
                     <td key={day}>
                       <Select
@@ -258,21 +261,17 @@ const FormAddSchedule = () => {
       <div className="legend mt-4">
         <h5>Keterangan:</h5>
         <div className="d-flex flex-wrap">
+        <div className="legend-item mr-3">
+            <span className="legend-color" style={{ backgroundColor: '#F3A712' }}></span>
+            <b>Head Bar</b>
+          </div>
           <div className="legend-item mr-3">
             <span className="legend-color" style={{ backgroundColor: '#23B7E5' }}></span>
-            FT (Full-time)
+            <b>Full Time</b>
           </div>
           <div className="legend-item mr-3">
             <span className="legend-color" style={{ backgroundColor: '#8CC63F' }}></span>
-            PT (Part-time)
-          </div>
-          <div className="legend-item mr-3">
-            <span className="legend-color" style={{ backgroundColor: '#F3A712' }}></span>
-            HB (Honorer/Bebas)
-          </div>
-          <div className="legend-item mr-3">
-            <span className="legend-color" style={{ backgroundColor: '#ff4507' }}></span>
-            DIR (Direktur)
+            <b>Part Time</b>
           </div>
         </div>
       </div>

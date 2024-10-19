@@ -22,6 +22,8 @@ const Sidebar = () => {
       setIsDropdownOpen(true);
     } else if (location.pathname === '/absen-office' || location.pathname === '/list-absensi-office'){
       setIsDropdownOpen(true);
+    }else if (location.pathname === '/absen-rekap' || location.pathname === '/list-absensi-rekap'){
+      setIsDropdownOpen(true);
     }
   }, [location.pathname]);
 
@@ -65,21 +67,26 @@ const Sidebar = () => {
               <li className="slide has-sub">
                 {/* Dropdown toggle dengan klik */}
                 <button className={`side-menu__item ${isDropdownOpen}`} onClick={toggleDropdown}>
-                  <i className="bx bx-task side-menu__icon"></i>
+                  <i class="bx bx-grid-alt side-menu__icon"></i>
                   <span className="side-menu__label">Data Absensi</span>
                   <i className={`fe fe-chevron-right side-menu__angle ${isDropdownOpen ? 'rotate' : ''}`}></i>
                 </button>
                 {/* Sub-menu dropdown */}
                 {isDropdownOpen && (
-                  <ul className="sub-menu">
-                    <li>
+                  <ul className="sub-menu" style={{ listStyleType: 'disc', paddingLeft: '20px', marginLeft: '20px' }}>
+                    <li style={{ listStyleType: 'disc' }}>
                       <Link to="/absen" className={`side-menu__item ${isActive('/absen') ? 'active' : ''}`}>
                         <span className="side-menu__label">List Absensi Barista</span>
                       </Link>
                     </li>
-                    <li>
+                    <li style={{ listStyleType: 'disc' }}>
                       <Link to="/absen-office" className={`side-menu__item ${isActive('/absen-office') ? 'active' : ''}`}>
                         <span className="side-menu__label">List Absensi Office</span>
+                      </Link>
+                    </li>
+                    <li style={{ listStyleType: 'disc' }}>
+                      <Link to="/absen-rekap" className={`side-menu__item ${isActive('/absen-rekap') ? 'active' : ''}`}>
+                        <span className="side-menu__label">Rekapan Total Jam Barista</span>
                       </Link>
                     </li>
                   </ul>

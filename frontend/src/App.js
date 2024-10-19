@@ -13,6 +13,7 @@ import ShiftTableList from "./pages/ShiftTableList";
 import Shift from "./pages/Shift";
 import Absen from "./pages/Absen";
 import AbsensiOffice from "./pages/AbsensiOffice";
+import AbsensiRekap from "./pages/AbsensiRekap";
 import Task from "./pages/Task";
 import AddEmployee from "./pages/AddEmployee";
 import AddSchedule from "./pages/AddSchedule";
@@ -42,6 +43,7 @@ function App() {
             <Route path="/shift" element={<PrivateRoute element={<Shift />} />} />
             <Route path="/absen" element={<PrivateRoute element={<Absen />} />} />
             <Route path="/absen-office" element={<PrivateRoute element={<AbsensiOffice />} />} />
+            <Route path="/absen-rekap" element={<PrivateRoute element={<AbsensiRekap />} />} />
             <Route path="/listtask" element={<PrivateRoute element={<Task />} />} />
             <Route path="/addemployee" element={<PrivateRoute element={<AddEmployee />} />} />
             <Route path="/addschedule" element={<PrivateRoute element={<AddSchedule />} />} />
